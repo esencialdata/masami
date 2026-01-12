@@ -544,6 +544,33 @@ export const api = {
                 setLocal('bakery_orders', orders);
                 return await api.transactions.create(transactionData);
             }
+        },
+        update: async (id, transaction) => {
+            // Logic: Update order details
+            if (supabase) {
+                const { data, error } = await supabase.from('orders').update(transaction).eq('id', id).select();
+                if (error) throw error;
+                return data[0];
+            }
+            // Local fallback
+            const orders = getLocal('bakery_orders');
+            const idx = orders.findIndex(o => o.id === id);
+            if (idx !== -1) {
+                orders[idx] = { ...orders[idx], ...transaction };
+                setLocal('bakery_orders', orders);
+                return orders[idx];
+            }
+            return null;
+        },
+        delete: async (id) => {
+            if (supabase) {
+                const { error } = await supabase.from('orders').delete().eq('id', id);
+                if (error) throw error;
+                return true;
+            }
+            const orders = getLocal('bakery_orders');
+            setLocal('bakery_orders', orders.filter(o => o.id !== id));
+            return true;
         }
     }
 };

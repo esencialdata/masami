@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../../services/api';
-import { Calendar, CheckCircle, Clock, MapPin, Plus, AlertCircle } from 'lucide-react';
-import { format, isToday, isTomorrow, parseISO, isAfter, startOfDay, addDays } from 'date-fns';
+import { Calendar, CheckCircle, Clock, MapPin, Plus, AlertCircle, Pencil, Trash2 } from 'lucide-react';
+import { format, isToday, isTomorrow, parseISO, isAfter, startOfDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import NewOrderModal from './NewOrderModal';
 
@@ -9,6 +9,7 @@ const OrdersView = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedOrder, setSelectedOrder] = useState(null);
 
     const loadOrders = async () => {
         try {
@@ -56,6 +57,23 @@ const OrdersView = () => {
         }
     };
 
+    const handleEdit = (order) => {
+        setSelectedOrder(order);
+        setIsModalOpen(true);
+    };
+
+    const handleDelete = async (order) => {
+        if (window.confirm(`¿Seguro que quieres eliminar el pedido de ${order.customers?.name}? Esta acción no se puede deshacer.`)) {
+            try {
+                await api.orders.delete(order.id);
+                loadOrders();
+            } catch (e) {
+                console.error(e);
+                alert('Error al eliminar');
+            }
+        }
+    };
+
     const [showProductionModal, setShowProductionModal] = useState(false);
     const [productionData, setProductionData] = useState([]);
 
@@ -93,7 +111,7 @@ const OrdersView = () => {
                         Ver Producción
                     </button>
                     <button
-                        onClick={() => setIsModalOpen(true)}
+                        onClick={() => { setSelectedOrder(null); setIsModalOpen(true); }}
                         className="bg-primary text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-yellow-600 transition-colors flex items-center">
                         <Plus size={20} className="mr-2" />
                         Nuevo Pedido
@@ -147,7 +165,14 @@ const OrdersView = () => {
                     </div>
                     {todayOrders.length === 0 && <p className="text-gray-400 text-sm italic">Nada para hoy (¡Descanso merecido!)</p>}
                     {todayOrders.map(order => (
-                        <OrderCard key={order.id} order={order} onComplete={() => handleComplete(order)} urgent />
+                        <OrderCard
+                            key={order.id}
+                            order={order}
+                            onComplete={() => handleComplete(order)}
+                            onEdit={() => handleEdit(order)}
+                            onDelete={() => handleDelete(order)}
+                            urgent
+                        />
                     ))}
                 </section>
 
@@ -158,7 +183,13 @@ const OrdersView = () => {
                     </div>
                     {tomorrowOrders.length === 0 && <p className="text-gray-400 text-sm italic">Sin entregas mañana.</p>}
                     {tomorrowOrders.map(order => (
-                        <OrderCard key={order.id} order={order} onComplete={() => handleComplete(order)} />
+                        <OrderCard
+                            key={order.id}
+                            order={order}
+                            onComplete={() => handleComplete(order)}
+                            onEdit={() => handleEdit(order)}
+                            onDelete={() => handleDelete(order)}
+                        />
                     ))}
                 </section>
 
@@ -168,25 +199,30 @@ const OrdersView = () => {
                         <Calendar size={16} /> PRÓXIMOS
                     </div>
                     {futureOrders.map(order => (
-                        <OrderCard key={order.id} order={order} onComplete={() => handleComplete(order)} />
+                        <OrderCard
+                            key={order.id}
+                            order={order}
+                            onComplete={() => handleComplete(order)}
+                            onEdit={() => handleEdit(order)}
+                            onDelete={() => handleDelete(order)}
+                        />
                     ))}
                 </section>
             </div>
 
-            <NewOrderModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSuccess={loadOrders} />
+            <NewOrderModal
+                isOpen={isModalOpen}
+                onClose={() => { setIsModalOpen(false); setSelectedOrder(null); }}
+                onSuccess={loadOrders}
+                initialData={selectedOrder}
+            />
         </div>
     );
 };
 
-const OrderCard = ({ order, onComplete, urgent }) => {
+const OrderCard = ({ order, onComplete, onEdit, onDelete, urgent }) => {
     const formattedTime = format(parseISO(order.delivery_date), 'h:mm a');
     const displayDate = format(parseISO(order.delivery_date), "EEE d MMM", { locale: es });
-
-    // items usually stored as string in basic implementations if not careful, 
-    // but schema said jsonb, so api.js handles parsing?
-    // Supabase returns object automatically. Localstorage needs JSON.parse if stringified?
-    // Let's assume array of { product: "Name", quantity: 1 }
-
     const items = Array.isArray(order.items) ? order.items : (JSON.parse(order.items || '[]'));
 
     return (
@@ -204,7 +240,17 @@ const OrderCard = ({ order, onComplete, urgent }) => {
                 )}
             </div>
 
-            <h3 className="font-bold text-gray-900 text-lg leading-tight mb-1">{order.customers?.name || 'Cliente'}</h3>
+            <div className="flex justify-between items-start">
+                <h3 className="font-bold text-gray-900 text-lg leading-tight mb-1">{order.customers?.name || 'Cliente'}</h3>
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onClick={onEdit} className="p-1 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded">
+                        <Pencil size={16} />
+                    </button>
+                    <button onClick={onDelete} className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded">
+                        <Trash2 size={16} />
+                    </button>
+                </div>
+            </div>
 
             <ul className="text-sm text-gray-600 space-y-1 my-3 border-t border-dashed border-gray-100 pt-2">
                 {items.map((item, idx) => (
@@ -222,7 +268,7 @@ const OrderCard = ({ order, onComplete, urgent }) => {
 
             <div className="flex justify-between items-center mt-4">
                 <div className="text-xs text-gray-400">
-                    Pendiente: <span className="font-bold text-gray-700">${Number(order.total_amount) - Number(order.prepayment || 0)}</span>
+                    Pendiente: <span className="font-bold text-gray-700">${Number(order.total_amount || 0) - Number(order.prepayment || 0)}</span>
                 </div>
                 <button
                     onClick={onComplete}

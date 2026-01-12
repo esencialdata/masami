@@ -5,7 +5,7 @@ import { api } from '../../services/api';
 import { User, Calendar, ShoppingBag, Plus, Trash2 } from 'lucide-react';
 import AddClientModal from '../clients/AddClientModal';
 
-const NewOrderModal = ({ isOpen, onClose, onSuccess }) => {
+const NewOrderModal = ({ isOpen, onClose, onSuccess, initialData }) => {
     const [step, setStep] = useState(1);
     const [clients, setClients] = useState([]);
     const [products, setProducts] = useState([]);
@@ -27,16 +27,34 @@ const NewOrderModal = ({ isOpen, onClose, onSuccess }) => {
         if (isOpen) {
             api.customers.list().then(setClients);
             api.products.list().then(setProducts);
-            // Default date today, time next hour
-            const now = new Date();
-            setDate(now.toISOString().split('T')[0]);
-            setTime(`${now.getHours() + 1}:00`);
-            setItems([]);
-            setNotes('');
-            setPrepayment(0);
+
+            if (initialData) {
+                // Edit Mode
+                setClientId(initialData.client_id);
+                const d = new Date(initialData.delivery_date);
+                setDate(d.toISOString().split('T')[0]);
+                // Time format needs to be HH:MM
+                const hours = String(d.getHours()).padStart(2, '0');
+                const minutes = String(d.getMinutes()).padStart(2, '0');
+                setTime(`${hours}:${minutes}`);
+
+                const loadedItems = Array.isArray(initialData.items) ? initialData.items : JSON.parse(initialData.items || '[]');
+                setItems(loadedItems);
+
+                setNotes(initialData.notes || '');
+                setPrepayment(initialData.prepayment || 0);
+            } else {
+                // Create Mode
+                const now = new Date();
+                setDate(now.toISOString().split('T')[0]);
+                setTime(`${now.getHours() + 1}:00`);
+                setItems([]);
+                setNotes('');
+                setPrepayment(0);
+            }
             setStep(1);
         }
-    }, [isOpen]);
+    }, [isOpen, initialData]);
 
     const handleAddItem = () => {
         if (!tempProduct) return;
@@ -61,20 +79,26 @@ const NewOrderModal = ({ isOpen, onClose, onSuccess }) => {
             const deliveryDate = new Date(`${date}T${time}:00`).toISOString();
             const total = calculateTotal();
 
-            await api.orders.create({
+            const payload = {
                 client_id: clientId,
                 delivery_date: deliveryDate,
                 items: items,
-                total: total,
+                total: total, // Note: DB field checked previously
                 prepayment: Number(prepayment),
                 notes: notes,
-                status: 'PENDIENTE'
-            });
+                status: initialData ? initialData.status : 'PENDIENTE'
+            };
+
+            if (initialData) {
+                await api.orders.update(initialData.id, payload);
+            } else {
+                await api.orders.create(payload);
+            }
             onSuccess();
             onClose();
         } catch (e) {
             console.error(e);
-            alert("Error al crear pedido");
+            alert("Error al guardar pedido");
         }
     };
 
