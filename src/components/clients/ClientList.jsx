@@ -122,7 +122,7 @@ const ClientCard = ({ client, onEdit }) => {
 
     const handleWhatsApp = () => {
         const phone = client.phone ? client.phone.replace(/\D/g, '') : '';
-        const text = encodeURIComponent(`Hola ${client.name}, soy BakeryOS, ¿te gustaría apartar pedido hoy?`);
+        const text = encodeURIComponent(`Hola, ${client.name} soy Chelito, es un gusto saludarte el día de hoy 😃`);
         if (phone) window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
     };
 
