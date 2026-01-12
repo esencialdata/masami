@@ -60,7 +60,7 @@ const Layout = ({ children, activeTab, setActiveTab, onTransactionAdded }) => {
 
             {/* Mobile Header */}
             <header className="md:hidden fixed top-0 left-0 right-0 bg-white p-4 shadow-sm z-50 flex items-center justify-center border-b border-gray-100">
-                <img src="/logo_chelito.svg" alt="Chelito" className="h-12 w-auto" />
+                <img src="/logo_chelito.svg" alt="Chelito" className="h-16 w-auto" />
             </header>
 
             {/* Main Content */}
