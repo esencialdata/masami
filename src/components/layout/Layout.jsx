@@ -49,7 +49,7 @@ const Layout = ({ children, activeTab, setActiveTab, onTransactionAdded }) => {
 
                 <div className="p-4 border-t border-gray-100">
                     <button className="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-gray-50 text-gray-600 transition-colors">
-                        <img src="/faicon.svg" alt="User" className="w-10 h-10 rounded-full border border-gray-100 p-1" />
+                        <img src="/app_icon.svg" alt="User" className="w-10 h-10 rounded-full border border-gray-100 p-1" />
                         <div className="text-left">
                             <p className="text-sm font-bold text-gray-900">Chelito De Montiel</p>
                             <p className="text-xs text-gray-500">Cerrar Sesión</p>
