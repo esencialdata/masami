@@ -60,20 +60,24 @@ const ClientList = () => {
                 </button>
             </div>
 
-            {/* Zone Filter */}
-            <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
-                {zones.map(zone => (
-                    <button
-                        key={zone}
-                        onClick={() => setSelectedZone(zone)}
-                        className={`whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-bold transition-all shadow-sm ${selectedZone === zone
-                            ? 'bg-gray-900 text-white shadow-md ring-2 ring-gray-900 ring-offset-2'
-                            : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
-                            }`}
-                    >
-                        {zone}
-                    </button>
-                ))}
+            {/* Zone Filter - Dropdown */}
+            <div className="relative">
+                <select
+                    value={selectedZone}
+                    onChange={(e) => setSelectedZone(e.target.value)}
+                    className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-lg font-medium text-gray-700 shadow-sm appearance-none outline-none focus:ring-2 focus:ring-primary cursor-pointer"
+                >
+                    {zones.map(zone => (
+                        <option key={zone} value={zone}>
+                            {zone === 'Todas' ? '📍 Filtrar por Zona: Todas' : `📍 Zona: ${zone}`}
+                        </option>
+                    ))}
+                </select>
+                <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-400">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
