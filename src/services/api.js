@@ -287,6 +287,14 @@ export const api = {
                 return supply;
             }
             return null;
+        },
+        update: async (id, upgrades) => {
+            if (supabase) {
+                const { data, error } = await supabase.from('supplies').update(upgrades).eq('id', id).select();
+                if (error) throw error;
+                return data[0];
+            }
+            return null;
         }
     },
     recipes: {

@@ -109,13 +109,22 @@ const SupplyList = () => {
                                         </span>
                                     </p>
                                 </div>
-                                <div className="text-right">
-                                    <p className="text-xs text-gray-400 mb-1 uppercase font-bold tracking-wider">En Stock</p>
-                                    <p className="text-2xl font-black text-gray-900">
-                                        {Number(supply.total_stock).toLocaleString()}
-                                        <span className="text-sm text-gray-400 font-medium ml-1">{supply.unit}</span>
-                                    </p>
-                                    <span className="text-xs text-primary font-bold group-hover:underline">Ajustar Stock</span>
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); setIsCreateModalOpen(true); setSelectedSupply(supply); }}
+                                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                        title="Editar Detalles"
+                                    >
+                                        <Pencil size={18} />
+                                    </button>
+                                    <div className="text-right">
+                                        <p className="text-xs text-gray-400 mb-1 uppercase font-bold tracking-wider">En Stock</p>
+                                        <p className="text-2xl font-black text-gray-900">
+                                            {Number(supply.total_stock).toLocaleString()}
+                                            <span className="text-sm text-gray-400 font-medium ml-1">{supply.unit}</span>
+                                        </p>
+                                        <span className="text-xs text-primary font-bold group-hover:underline">Ajustar Stock</span>
+                                    </div>
                                 </div>
                             </button>
                         );
@@ -125,8 +134,9 @@ const SupplyList = () => {
 
             <AddSupplyModal
                 isOpen={isCreateModalOpen}
-                onClose={() => setIsCreateModalOpen(false)}
-                onSuccess={() => { loadSupplies(); setIsCreateModalOpen(false); }}
+                onClose={() => { setIsCreateModalOpen(false); setSelectedSupply(null); }}
+                onSuccess={() => { loadSupplies(); setIsCreateModalOpen(false); setSelectedSupply(null); }}
+                initialData={selectedSupply}
             />
 
             <AdjustStockModal
@@ -139,26 +149,53 @@ const SupplyList = () => {
     );
 };
 
-const AddSupplyModal = ({ isOpen, onClose, onSuccess }) => {
+const AddSupplyModal = ({ isOpen, onClose, onSuccess, initialData }) => {
     const [name, setName] = useState('');
     const [cost, setCost] = useState('');
     const [unit, setUnit] = useState('kg');
     const [stock, setStock] = useState('');
     const [loading, setLoading] = useState(false);
 
+    useEffect(() => {
+        if (isOpen) {
+            if (initialData) {
+                setName(initialData.name);
+                setCost(initialData.current_cost);
+                setUnit(initialData.unit);
+                // Stock shouldn't be edited here directly to avoid sync issues, or maybe yes?
+                // Let's disable stock editing here and force usage of AdjustStock for auditing.
+                setStock(initialData.total_stock || '');
+            } else {
+                setName('');
+                setCost('');
+                setUnit('kg');
+                setStock('');
+            }
+        }
+    }, [isOpen, initialData]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         try {
-            await api.supplies.create({
-                name,
-                current_cost: Number(cost),
-                unit,
-                current_stock: Number(stock || 0)
-            });
-            setName('');
-            setCost('');
-            setStock('');
+            if (initialData) {
+                // Update
+                await api.supplies.update(initialData.id, {
+                    name,
+                    current_cost: Number(cost),
+                    unit
+                    // We don't update stock here directly unless we want to reset it?
+                    // Better to ignore stock update here to be safe and use usage logs.
+                });
+            } else {
+                // Create
+                await api.supplies.create({
+                    name,
+                    current_cost: Number(cost),
+                    unit,
+                    current_stock: Number(stock || 0)
+                });
+            }
             onSuccess();
         } catch (error) {
             console.error(error);
@@ -168,7 +205,7 @@ const AddSupplyModal = ({ isOpen, onClose, onSuccess }) => {
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="Alta de Nuevo Insumo (Catálogo)">
+        <Modal isOpen={isOpen} onClose={onClose} title={initialData ? "Editar Insumo" : "Alta de Nuevo Insumo"}>
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del Insumo</label>
@@ -180,7 +217,6 @@ const AddSupplyModal = ({ isOpen, onClose, onSuccess }) => {
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                     />
-                    <p className="text-xs text-gray-400 mt-1">Este nombre se usará para identificarlo en el inventario.</p>
                 </div>
                 <div className="flex gap-4">
                     <div className="flex-1">
@@ -211,23 +247,25 @@ const AddSupplyModal = ({ isOpen, onClose, onSuccess }) => {
                     </div>
                 </div>
 
-                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Stock Inicial (Opcional)</label>
-                    <input
-                        type="number"
-                        placeholder="0"
-                        className="w-full p-3 rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-primary bg-white"
-                        value={stock}
-                        onChange={(e) => setStock(e.target.value)}
-                    />
-                </div>
+                {!initialData && (
+                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Stock Inicial (Opcional)</label>
+                        <input
+                            type="number"
+                            placeholder="0"
+                            className="w-full p-3 rounded-xl border border-gray-200 outline-none focus:ring-2 focus:ring-primary bg-white"
+                            value={stock}
+                            onChange={(e) => setStock(e.target.value)}
+                        />
+                    </div>
+                )}
 
                 <button
                     type="submit"
                     disabled={loading}
                     className="w-full bg-gray-900 text-white py-4 rounded-xl font-bold mt-4 hover:bg-black transition-colors"
                 >
-                    {loading ? 'Creando...' : 'Crear en Catálogo'}
+                    {loading ? 'Guardando...' : (initialData ? 'Guardar Cambios' : 'Crear en Catálogo')}
                 </button>
             </form>
         </Modal>
