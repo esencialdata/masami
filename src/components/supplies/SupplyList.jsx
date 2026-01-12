@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../../services/api';
-import { Plus, Package, TrendingUp, TrendingDown, Minus, Layers } from 'lucide-react';
+import { Plus, Package, TrendingUp, TrendingDown, Minus, Layers, Pencil } from 'lucide-react';
 import Modal from '../ui/Modal';
 
 
