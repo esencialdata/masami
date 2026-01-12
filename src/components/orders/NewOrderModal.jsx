@@ -98,7 +98,7 @@ const NewOrderModal = ({ isOpen, onClose, onSuccess, initialData }) => {
             onClose();
         } catch (e) {
             console.error(e);
-            alert("Error al guardar pedido");
+            alert(`Error al guardar pedido: ${e.message || 'Error desconocido'}`);
         }
     };
 
