@@ -65,7 +65,7 @@ const NewOrderModal = ({ isOpen, onClose, onSuccess }) => {
                 client_id: clientId,
                 delivery_date: deliveryDate,
                 items: items,
-                total_amount: total,
+                total: total,
                 prepayment: Number(prepayment),
                 notes: notes,
                 status: 'PENDIENTE'
