@@ -33,6 +33,7 @@ create table transactions (
   description text,
   client_id uuid references customers(id),
   supply_id uuid references supplies(id),
+  pedido_id uuid references orders(id),
   payment_method text,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
