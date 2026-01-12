@@ -74,6 +74,7 @@ const OrdersView = () => {
         }
     };
 
+    const [showProductionModal, setShowProductionModal] = useState(false);
     const [productionPlan, setProductionPlan] = useState(null);
     const [calculating, setCalculating] = useState(false);
 
