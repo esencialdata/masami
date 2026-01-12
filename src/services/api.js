@@ -330,7 +330,7 @@ export const api = {
         save: async (productId, ingredients) => {
             // Ingredients: [{ supply_id, quantity, unit }]
             if (supabase) {
-                // Transaction-like: Delete old, Insert new (Simpler for now)
+                // 1. Transaction-like: Delete old, Insert new
                 await supabase.from('recipes').delete().eq('product_id', productId);
 
                 const toInsert = ingredients.map(i => ({
@@ -343,18 +343,19 @@ export const api = {
                 const { error } = await supabase.from('recipes').insert(toInsert);
                 if (error) throw error;
 
-                // Trigger cost calculation update for Product
-                const totalCost = ingredients.reduce((sum, item) => sum + (Number(item.cost_contribution) || 0), 0);
-                // Note: cost_contribution in 'ingredients' passed from UI might be missing or need re-calc?
-                // For simplicity, let's assume we trigger a re-calc or just update with naive sum if available 
-                // BUT, better to rely on what the UI sends or re-fetch.
-                // UI 'ingredients' likely don't have cost_contribution if raw from form? 
-                // Actually Logic: 
-                // We should really recalculate cost from DB prices, but for speed:
-                // Let's rely on api call or simple trigger. User prompt said: "Se actualiza vía Trigger o función"
-                // We'll update the `calculated_cost` on product if we can.
+                // 2. Real Cost Calculation (Server-side simulation)
+                // We need to fetch the current PRICE of the supplies we just used
+                const supplyIds = ingredients.map(i => i.supply_id);
+                const { data: supplies } = await supabase.from('supplies').select('id, current_cost').in('id', supplyIds);
 
-                // Simplest: Just save relation. Let ProductList re-query cost if needed or use separate fn.
+                const totalCost = ingredients.reduce((sum, item) => {
+                    const supply = supplies?.find(s => s.id === item.supply_id);
+                    const cost = Number(supply?.current_cost || 0);
+                    return sum + (Number(item.quantity) * cost);
+                }, 0);
+
+                // 3. Update Product Cost
+                await supabase.from('products').update({ calculated_cost: totalCost }).eq('id', productId);
 
                 return true;
             }
