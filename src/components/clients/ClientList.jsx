@@ -66,8 +66,8 @@ const ClientList = () => {
                     <button
                         key={zone}
                         onClick={() => setSelectedZone(zone)}
-                        className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-bold transition-all ${selectedZone === zone
-                            ? 'bg-gray-900 text-white shadow-md'
+                        className={`whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-bold transition-all shadow-sm ${selectedZone === zone
+                            ? 'bg-gray-900 text-white shadow-md ring-2 ring-gray-900 ring-offset-2'
                             : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
                             }`}
                     >
@@ -128,18 +128,18 @@ const ClientCard = ({ client, onEdit }) => {
 
     return (
         <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between h-full relative overflow-hidden group hover:border-primary/30 transition-all">
-            <div className="flex justify-between items-start mb-3">
-                <div className="flex flex-col">
+            <div className="flex flex-col sm:flex-row justify-between items-start mb-3 gap-2">
+                <div className="flex flex-col w-full">
                     <span className={`self-start text-[10px] font-black tracking-wider px-2 py-1 rounded-md mb-2 ${badge.color}`}>
                         {badge.text}
                     </span>
-                    <h3 className="text-lg font-bold text-gray-900 leading-tight">{client.name}</h3>
+                    <h3 className="text-lg font-bold text-gray-900 leading-tight break-words">{client.name}</h3>
                     <span className="text-xs text-gray-400 font-medium mt-1">
                         📍 {client.zone || 'Sin Zona'} • {orders} Pedidos
                     </span>
                 </div>
                 {/* Visual Category Star if manually set to VIP too */}
-                {client.category === 'VIP' && <Star size={20} className="text-yellow-400 fill-yellow-400" />}
+                {client.category === 'VIP' && <Star size={20} className="text-yellow-400 fill-yellow-400 flex-shrink-0" />}
             </div>
 
             <div className="mt-4 pt-4 border-t border-gray-50 flex justify-between items-center">
