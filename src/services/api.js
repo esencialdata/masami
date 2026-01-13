@@ -134,9 +134,21 @@ export const api = {
             };
 
             if (supabase) {
-                const { data, error } = await supabase.from('customers').insert(newCustomer).select();
-                if (error) throw error;
-                return data[0];
+                try {
+                    const { data, error } = await supabase.from('customers').insert(newCustomer).select();
+                    if (error) throw error;
+                    return data[0];
+                } catch (err) {
+                    // Graceful Fallback: If 'notes' column doesn't exist yet, retry without it
+                    if (err.message && err.message.includes('notes') && customer.notes) {
+                        const { notes, ...fallbackCustomer } = newCustomer;
+                        const { data, error } = await supabase.from('customers').insert(fallbackCustomer).select();
+                        if (error) throw error;
+                        console.warn('Saved without notes due to missing column');
+                        return data[0];
+                    }
+                    throw err;
+                }
             }
             const current = getLocal(STORAGE_KEYS.CUSTOMERS);
             const newCust = { ...newCustomer, id: crypto.randomUUID() };
@@ -145,9 +157,21 @@ export const api = {
         },
         update: async (id, updates) => {
             if (supabase) {
-                const { data, error } = await supabase.from('customers').update(updates).eq('id', id).select();
-                if (error) throw error;
-                return data[0];
+                try {
+                    const { data, error } = await supabase.from('customers').update(updates).eq('id', id).select();
+                    if (error) throw error;
+                    return data[0];
+                } catch (err) {
+                    // Graceful Fallback for Update as well
+                    if (err.message && err.message.includes('notes') && updates.notes) {
+                        const { notes, ...fallbackUpdates } = updates;
+                        const { data, error } = await supabase.from('customers').update(fallbackUpdates).eq('id', id).select();
+                        if (error) throw error;
+                        console.warn('Updated without notes due to missing column');
+                        return data[0];
+                    }
+                    throw err;
+                }
             }
             const current = getLocal(STORAGE_KEYS.CUSTOMERS);
             const index = current.findIndex(c => c.id === id);
