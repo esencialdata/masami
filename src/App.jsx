@@ -7,6 +7,7 @@ import OrdersView from './components/orders/OrdersView';
 
 import ProductList from './components/products/ProductList';
 import Settings from './components/settings/Settings';
+import ReportsView from './components/reports/ReportsView';
 
 // Simple Login Component
 const LoginScreen = ({ onLogin }) => {
@@ -79,6 +80,7 @@ function App() {
       case 'clients': return <ClientList />;
       case 'products': return <ProductList />;
       case 'settings': return <Settings />;
+      case 'reports': return <ReportsView />;
       default: return <Dashboard refreshTrigger={lastUpdated} />;
     }
   };

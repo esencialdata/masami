@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Users, Settings, Package, Croissant, LogOut, Calendar } from 'lucide-react';
+import { LayoutDashboard, Users, Settings, Package, Croissant, LogOut, Calendar, BarChart3 } from 'lucide-react';
 import { TransactionFABS } from '../transactions/TransactionFABS';
 
 const Layout = ({ children, activeTab, setActiveTab, onTransactionAdded }) => {
@@ -35,6 +35,12 @@ const Layout = ({ children, activeTab, setActiveTab, onTransactionAdded }) => {
                         label="Inventario"
                         isActive={activeTab === 'products'}
                         onClick={() => setActiveTab('products')}
+                    />
+                    <SidebarLink
+                        icon={<BarChart3 size={20} />}
+                        label="Reportes"
+                        isActive={activeTab === 'reports'}
+                        onClick={() => setActiveTab('reports')}
                     />
                     <div className="pt-8 px-4">
                         <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Sistema</span>
@@ -88,10 +94,10 @@ const Layout = ({ children, activeTab, setActiveTab, onTransactionAdded }) => {
                         onClick={() => setActiveTab('orders')}
                     />
                     <NavButton
-                        icon={<Users size={24} />}
-                        label="Clientes"
-                        isActive={activeTab === 'clients'}
-                        onClick={() => setActiveTab('clients')}
+                        icon={<BarChart3 size={24} />}
+                        label="Reportes"
+                        isActive={activeTab === 'reports'}
+                        onClick={() => setActiveTab('reports')}
                     />
                     <NavButton
                         icon={<Package size={24} />}
@@ -132,3 +138,4 @@ const NavButton = ({ icon, label, isActive, onClick }) => (
 );
 
 export default Layout;
+
