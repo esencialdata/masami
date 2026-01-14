@@ -9,8 +9,10 @@ import ProductList from './components/products/ProductList';
 import Settings from './components/settings/Settings';
 import ReportsView from './components/reports/ReportsView';
 
+import LandingPage from './components/landing/LandingPage';
+
 // Simple Login Component
-const LoginScreen = ({ onLogin }) => {
+const LoginScreen = ({ onLogin, onBack }) => {
   const [pass, setPass] = useState('');
   const [error, setError] = useState(false);
 
@@ -24,11 +26,19 @@ const LoginScreen = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-sm text-center">
-        <img src="/app_icon.svg" className="w-20 h-20 mx-auto mb-6 rounded-2xl shadow-sm" alt="Logo" />
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Bienvenido a CDM</h1>
-        <p className="text-gray-500 mb-6 text-sm">Ingresa tu clave de acceso</p>
+    <div className="min-h-screen bg-brand-cream flex flex-col items-center justify-center p-4 transition-colors duration-300">
+      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-sm text-center border border-brand-coffee/5 relative">
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="absolute top-4 left-4 text-brand-coffee/50 hover:text-brand-gold transition-colors"
+          >
+            <span className="material-symbols-outlined">arrow_back</span>
+          </button>
+        )}
+        <img src="/app_icon.svg" className="w-20 h-20 mx-auto mb-6 rounded-2xl shadow-sm border border-brand-coffee/5" alt="Logo" />
+        <h1 className="text-2xl font-bold text-brand-coffee mb-2">Bienvenido a MasaMi</h1>
+        <p className="text-brand-coffee/60 mb-6 text-sm">Gestiona tu negocio de forma inteligente</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
@@ -37,12 +47,12 @@ const LoginScreen = ({ onLogin }) => {
             value={pass}
             onChange={e => { setPass(e.target.value); setError(false); }}
             placeholder="Clave de acceso"
-            className={`w-full p-4 rounded-xl border text-center text-lg outline-none transition-all ${error ? 'border-red-500 bg-red-50 text-red-900' : 'border-gray-200 focus:ring-2 focus:ring-primary'}`}
+            className={`w-full p-4 rounded-xl border text-center text-lg outline-none transition-all bg-brand-cream text-brand-coffee ${error ? 'border-danger bg-red-50 text-danger' : 'border-brand-coffee/10 focus:ring-2 focus:ring-brand-gold focus:border-brand-gold'}`}
           />
-          {error && <p className="text-red-500 text-xs font-bold animate-pulse">Clave incorrecta</p>}
+          {error && <p className="text-danger text-xs font-bold animate-pulse">Clave incorrecta</p>}
           <button
             type="submit"
-            className="w-full bg-primary text-white font-bold py-4 rounded-xl hover:bg-yellow-600 transition-colors shadow-lg shadow-yellow-500/20"
+            className="w-full bg-brand-gold text-brand-coffee font-bold py-4 rounded-xl hover:bg-yellow-600 transition-colors shadow-lg shadow-brand-gold/20 hover:scale-[1.02] active:scale-[0.98]"
           >
             Entrar
           </button>
@@ -57,6 +67,8 @@ function App() {
     return localStorage.getItem('cdm_auth_token') === 'chelitoysantiago';
   });
 
+  const [showLogin, setShowLogin] = useState(false);
+
   const [activeTab, setActiveTab] = useState('dashboard');
   const [lastUpdated, setLastUpdated] = useState(() => Date.now());
 
@@ -70,8 +82,17 @@ function App() {
   };
 
   if (!isAuthenticated) {
-    return <LoginScreen onLogin={handleLogin} />;
+    if (showLogin) {
+      return <LoginScreen onLogin={handleLogin} onBack={() => setShowLogin(false)} />;
+    }
+    return <LandingPage onLogin={() => setShowLogin(true)} />;
   }
+
+  const handleLogout = () => {
+    localStorage.removeItem('cdm_auth_token');
+    setIsAuthenticated(false);
+    setShowLogin(false);
+  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -90,6 +111,7 @@ function App() {
       activeTab={activeTab}
       setActiveTab={setActiveTab}
       onTransactionAdded={handleTransactionAdded}
+      onLogout={handleLogout}
     >
       {renderContent()}
     </Layout>

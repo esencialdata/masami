@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MasaMi - Inteligencia de Cocina</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#d39e17",
+                        "primary-dark": "#b08312",
+                        "coffee": "#3E2723",
+                        "coffee-light": "#5D4037",
+                        "cream": "#F9F7F2",
+                        "cream-dark": "#EFEBE0",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"],
+                        "body": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "2xl": "1.5rem", "full": "9999px" },
+                    boxShadow: {
+                        "soft": "0 10px 40px -10px rgba(62, 39, 35, 0.08)",
+                        "glow": "0 0 20px rgba(211, 158, 23, 0.3)"
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: "Plus Jakarta Sans", sans-serif;
+            color: #3E2723;
+            background-color: #F9F7F2;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-cream text-coffee overflow-x-hidden selection:bg-primary/30 selection:text-coffee">
+<!-- Navbar -->
+<nav class="fixed top-0 left-0 right-0 z-50 bg-cream/90 backdrop-blur-md border-b border-coffee/5 transition-all duration-300">
+<div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="size-8 text-primary">
+<span class="material-symbols-outlined text-4xl">bakery_dining</span>
+</div>
+<span class="text-xl font-bold tracking-tight text-coffee">MasaMi</span>
+</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="text-sm font-medium text-coffee/80 hover:text-primary transition-colors" href="#features">Características</a>
+<a class="text-sm font-medium text-coffee/80 hover:text-primary transition-colors" href="#pricing">Precios</a>
+<a class="text-sm font-medium text-coffee/80 hover:text-primary transition-colors" href="#testimonials">Testimonios</a>
+<a class="text-sm font-medium text-coffee/80 hover:text-primary transition-colors" href="#faq">FAQ</a>
+</div>
+<div class="flex items-center gap-4">
+<a class="hidden sm:block text-sm font-semibold text-coffee hover:text-primary transition-colors" href="#">Iniciar Sesión</a>
+<button class="bg-primary hover:bg-primary-dark text-coffee font-bold py-2.5 px-6 rounded-full text-sm transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 transform">
+                    Empieza Gratis
+                </button>
+</div>
+</div>
+</nav>
+<!-- Hero Section -->
+<section class="relative pt-32 pb-20 lg:pt-40 lg:pb-32 overflow-hidden">
+<!-- Decor pattern -->
+<div class="absolute top-0 right-0 -mr-20 -mt-20 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl -z-10"></div>
+<div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-[400px] h-[400px] bg-orange-200/10 rounded-full blur-3xl -z-10"></div>
+<div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center">
+<div class="flex flex-col gap-8 text-center lg:text-left z-10">
+<div class="space-y-4">
+<h1 class="text-4xl lg:text-6xl font-extrabold leading-[1.1] tracking-tight text-coffee">
+                        Deja de adivinar, <br/>
+<span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-500">empieza a ganar.</span>
+</h1>
+<p class="text-lg lg:text-xl text-coffee/70 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+                        El primer sistema de ‘Inteligencia de Cocina’ para panaderías y dark kitchens. Controla tus costos y optimiza tu producción en tiempo real.
+                    </p>
+</div>
+<div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+<button class="bg-primary hover:bg-primary-dark text-coffee text-base font-bold py-4 px-8 rounded-xl shadow-glow transition-all hover:-translate-y-1">
+                        Empieza Gratis por 14 Días
+                    </button>
+</div>
+<div class="flex flex-col gap-4 items-center lg:items-start">
+<p class="text-xs font-medium text-coffee/50 uppercase tracking-wider">No requiere tarjeta de crédito</p>
+<div class="flex flex-wrap gap-3 justify-center lg:justify-start">
+<div class="flex items-center gap-2 bg-white/60 px-3 py-1.5 rounded-full border border-coffee/5 shadow-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">schedule</span>
+<span class="text-sm font-semibold text-coffee">Ahorra tiempo</span>
+</div>
+<div class="flex items-center gap-2 bg-white/60 px-3 py-1.5 rounded-full border border-coffee/5 shadow-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">savings</span>
+<span class="text-sm font-semibold text-coffee">Protege márgenes</span>
+</div>
+</div>
+</div>
+</div>
+<div class="relative lg:h-[600px] flex items-center justify-center perspective-1000">
+<!-- Phone Mockup -->
+<div class="relative w-[300px] h-[600px] bg-black rounded-[40px] border-8 border-coffee shadow-2xl overflow-hidden transform rotate-[-6deg] hover:rotate-0 transition-transform duration-500">
+<!-- Notch -->
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-coffee rounded-b-2xl z-20"></div>
+<!-- Screen Content -->
+<div class="w-full h-full bg-cream relative overflow-y-auto pt-8">
+<!-- Mock Header -->
+<div class="px-4 py-2 flex justify-between items-center border-b border-coffee/5">
+<span class="material-symbols-outlined text-coffee">menu</span>
+<span class="text-sm font-bold">MasaMi</span>
+<div class="size-6 bg-primary rounded-full"></div>
+</div>
+<!-- Mock Dashboard -->
+<div class="p-4 space-y-4">
+<div class="bg-white p-4 rounded-xl shadow-sm">
+<h4 class="text-xs text-coffee/60 uppercase">Producción de Hoy</h4>
+<div class="text-2xl font-bold text-coffee mt-1">1,240 pzas</div>
+<div class="w-full bg-gray-100 h-2 rounded-full mt-3 overflow-hidden">
+<div class="bg-primary w-[70%] h-full rounded-full"></div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<div class="bg-orange-50 p-3 rounded-xl border border-orange-100">
+<span class="material-symbols-outlined text-orange-500 mb-2">trending_up</span>
+<div class="text-xs text-coffee/60">Ventas</div>
+<div class="font-bold">$12,450</div>
+</div>
+<div class="bg-green-50 p-3 rounded-xl border border-green-100">
+<span class="material-symbols-outlined text-green-600 mb-2">attach_money</span>
+<div class="text-xs text-coffee/60">Costo</div>
+<div class="font-bold">$4,200</div>
+</div>
+</div>
+<div class="bg-white p-4 rounded-xl shadow-sm space-y-3">
+<h4 class="text-sm font-bold">Pedidos Pendientes</h4>
+<div class="flex items-center gap-3 border-b border-gray-50 pb-2">
+<div class="bg-primary/20 p-2 rounded-lg text-primary font-bold text-xs">PM</div>
+<div class="flex-1">
+<div class="text-sm font-medium">Panadería Montiel</div>
+<div class="text-xs text-gray-400">200 Conchas</div>
+</div>
+<span class="text-xs font-bold text-orange-500">En Horno</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="bg-blue-100 p-2 rounded-lg text-blue-600 font-bold text-xs">DK</div>
+<div class="flex-1">
+<div class="text-sm font-medium">Dark Kitchen Sur</div>
+<div class="text-xs text-gray-400">50 Baguettes</div>
+</div>
+<span class="text-xs font-bold text-gray-400">Espera</span>
+</div>
+</div>
+</div>
+<!-- Mock FAB -->
+<div class="absolute bottom-6 right-6 size-12 bg-primary rounded-full flex items-center justify-center shadow-lg text-coffee">
+<span class="material-symbols-outlined">add</span>
+</div>
+</div>
+</div>
+<!-- Floating Card Decoration -->
+<div class="absolute bottom-20 -left-10 bg-white p-4 rounded-xl shadow-soft animate-bounce" style="animation-duration: 3s;">
+<div class="flex items-center gap-3">
+<div class="bg-green-100 p-2 rounded-lg text-green-700">
+<span class="material-symbols-outlined">check_circle</span>
+</div>
+<div>
+<div class="text-xs font-bold text-gray-500">Merma Reducida</div>
+<div class="text-lg font-bold text-coffee">-15%</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Agitation Section -->
+<section class="py-20 bg-white">
+<div class="max-w-7xl mx-auto px-6">
+<div class="text-center mb-16">
+<h2 class="text-3xl font-bold mb-4">¿Te suena familiar?</h2>
+<p class="text-coffee/70 max-w-2xl mx-auto">Si manejas una panadería, probablemente te enfrentas a estos dolores de cabeza todos los días.</p>
+</div>
+<div class="grid md:grid-cols-3 gap-8">
+<!-- Card 1 -->
+<div class="bg-cream p-8 rounded-2xl border border-coffee/5 hover:border-primary/50 transition-colors group">
+<div class="w-14 h-14 bg-white rounded-full flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary text-3xl">question_mark</span>
+</div>
+<h3 class="text-xl font-bold mb-3">El Misterio del Dinero</h3>
+<p class="text-coffee/70 leading-relaxed">Nunca sabes exactamente cuánto ganaste realmente al final del día después de pagar insumos y nómina.</p>
+</div>
+<!-- Card 2 -->
+<div class="bg-cream p-8 rounded-2xl border border-coffee/5 hover:border-primary/50 transition-colors group">
+<div class="w-14 h-14 bg-white rounded-full flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary text-3xl">receipt_long</span>
+</div>
+<h3 class="text-xl font-bold mb-3">La Servilleta Matemática</h3>
+<p class="text-coffee/70 leading-relaxed">Cálculos manuales rápidos en papel que llevan a errores costosos y precios mal calculados.</p>
+</div>
+<!-- Card 3 -->
+<div class="bg-cream p-8 rounded-2xl border border-coffee/5 hover:border-primary/50 transition-colors group">
+<div class="w-14 h-14 bg-white rounded-full flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary text-3xl">list_alt</span>
+</div>
+<h3 class="text-xl font-bold mb-3">El Caos de los Pedidos</h3>
+<p class="text-coffee/70 leading-relaxed">Pedidos perdidos en WhatsApp, post-its volando y producción desorganizada que genera estrés.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Comparison Section -->
+<section class="py-20 bg-cream-dark/30">
+<div class="max-w-7xl mx-auto px-6">
+<div class="grid lg:grid-cols-2 gap-12 items-center">
+<div class="space-y-6">
+<h2 class="text-3xl lg:text-4xl font-bold leading-tight">
+                        Tu libreta de usos múltiples, <br/>
+<span class="text-primary">ahora es Digital e Inteligente.</span>
+</h2>
+<p class="text-coffee/70 text-lg">
+                        Deja de luchar con hojas de cálculo complicadas o libretas manchadas de harina. MasaMi centraliza todo tu negocio en un solo lugar.
+                    </p>
+<div class="space-y-4 pt-4">
+<div class="flex items-center gap-4 bg-white p-4 rounded-xl border border-coffee/5 shadow-sm">
+<div class="bg-red-100 p-2 rounded-full shrink-0">
+<span class="material-symbols-outlined text-red-500">close</span>
+</div>
+<div>
+<h4 class="font-bold text-coffee">Otros Sistemas / Manual</h4>
+<p class="text-sm text-coffee/60">Información dispersa y difícil de analizar.</p>
+</div>
+</div>
+<div class="flex items-center gap-4 bg-white p-4 rounded-xl border-l-4 border-primary shadow-md transform translate-x-4 transition-transform">
+<div class="bg-primary/20 p-2 rounded-full shrink-0">
+<span class="material-symbols-outlined text-primary-dark">check</span>
+</div>
+<div>
+<h4 class="font-bold text-coffee">Sistema MasaMi</h4>
+<p class="text-sm text-coffee/60">Control total, costos automáticos y paz mental.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="relative h-[400px] w-full rounded-2xl overflow-hidden shadow-2xl group" data-alt="Close up of a baker using a tablet in a modern kitchen">
+<div class="absolute inset-0 bg-coffee/80 flex flex-col items-center justify-center text-center p-8 z-10">
+<span class="material-symbols-outlined text-6xl text-primary mb-4">sync_saved_locally</span>
+<h3 class="text-2xl font-bold text-white mb-2">Sincronización Total</h3>
+<p class="text-white/80">Inventario, Recetas y Ventas hablando el mismo idioma.</p>
+</div>
+<!-- Abstract Pattern background representing 'digital transformation' -->
+<div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1556910103-1c02745a30bf?auto=format&amp;fit=crop&amp;q=80')] bg-cover bg-center mix-blend-overlay opacity-40"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Features Section -->
+<section class="py-20 bg-white" id="features">
+<div class="max-w-7xl mx-auto px-6">
+<div class="text-center mb-16">
+<span class="text-primary font-bold tracking-wider uppercase text-sm">Características Principales</span>
+<h2 class="text-3xl md:text-4xl font-bold mt-2">Todo lo que necesitas para crecer</h2>
+</div>
+<div class="grid md:grid-cols-2 gap-8">
+<!-- Feature 1 -->
+<div class="bg-cream rounded-2xl overflow-hidden border border-coffee/5 hover:shadow-lg transition-shadow">
+<div class="p-8 pb-0">
+<h3 class="text-xl font-bold mb-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">science</span> Ingeniería de Receta
+                        </h3>
+<p class="text-coffee/70 mb-6">Calcula el costo exacto de cada gramo. Ajusta rendimientos y detecta fugas de dinero en tus formulaciones.</p>
+</div>
+<div class="bg-white mx-8 mt-2 rounded-t-xl border border-b-0 border-coffee/10 h-48 p-4 shadow-sm" data-alt="Interface showing recipe ingredient cost breakdown">
+<!-- UI Placeholder -->
+<div class="flex flex-col gap-2">
+<div class="h-4 bg-gray-100 rounded w-1/3"></div>
+<div class="space-y-2 mt-2">
+<div class="flex justify-between text-xs text-gray-400 border-b pb-1"><span>Harina Trigo</span><span>$12.50/kg</span></div>
+<div class="flex justify-between text-xs text-gray-400 border-b pb-1"><span>Mantequilla</span><span>$85.00/kg</span></div>
+<div class="flex justify-between text-xs text-gray-400 border-b pb-1"><span>Huevo</span><span>$42.00/kg</span></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Feature 2 -->
+<div class="bg-cream rounded-2xl overflow-hidden border border-coffee/5 hover:shadow-lg transition-shadow">
+<div class="p-8 pb-0">
+<h3 class="text-xl font-bold mb-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">calendar_month</span> Planificador de Producción
+                        </h3>
+<p class="text-coffee/70 mb-6">Genera listas de producción diarias basadas en pedidos reales y proyecciones de venta.</p>
+</div>
+<div class="bg-white mx-8 mt-2 rounded-t-xl border border-b-0 border-coffee/10 h-48 p-4 shadow-sm" data-alt="Calendar view showing production schedule for the week">
+<!-- UI Placeholder -->
+<div class="grid grid-cols-4 gap-2 h-full">
+<div class="bg-primary/10 rounded-lg p-2 flex flex-col items-center gap-1">
+<span class="text-[10px] font-bold">LUN</span>
+<div class="w-full h-1 bg-primary rounded"></div>
+<div class="w-full h-1 bg-primary/50 rounded"></div>
+</div>
+<div class="bg-gray-50 rounded-lg p-2 flex flex-col items-center gap-1">
+<span class="text-[10px] font-bold">MAR</span>
+<div class="w-full h-1 bg-gray-300 rounded"></div>
+</div>
+<div class="bg-gray-50 rounded-lg p-2 flex flex-col items-center gap-1">
+<span class="text-[10px] font-bold">MIE</span>
+<div class="w-full h-1 bg-gray-300 rounded"></div>
+</div>
+<div class="bg-gray-50 rounded-lg p-2 flex flex-col items-center gap-1">
+<span class="text-[10px] font-bold">JUE</span>
+<div class="w-full h-1 bg-gray-300 rounded"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Feature 3 -->
+<div class="bg-cream rounded-2xl overflow-hidden border border-coffee/5 hover:shadow-lg transition-shadow">
+<div class="p-8 pb-0">
+<h3 class="text-xl font-bold mb-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">trending_up</span> Detector de Inflación
+                        </h3>
+<p class="text-coffee/70 mb-6">MasaMi te alerta cuando el precio de un insumo sube y afecta tu margen de ganancia.</p>
+</div>
+<div class="bg-white mx-8 mt-2 rounded-t-xl border border-b-0 border-coffee/10 h-48 p-4 relative shadow-sm" data-alt="Alert notification showing price increase warning">
+<!-- UI Placeholder -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white shadow-md border border-red-100 p-3 rounded-lg flex items-center gap-3 w-5/6">
+<div class="bg-red-100 p-2 rounded-full text-red-500">
+<span class="material-symbols-outlined text-sm">warning</span>
+</div>
+<div>
+<div class="text-xs font-bold text-coffee">Alerta de Precio</div>
+<div class="text-[10px] text-gray-500">Azúcar subió un 5%</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Feature 4 -->
+<div class="bg-cream rounded-2xl overflow-hidden border border-coffee/5 hover:shadow-lg transition-shadow">
+<div class="p-8 pb-0">
+<h3 class="text-xl font-bold mb-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">local_shipping</span> Logística Inteligente
+                        </h3>
+<p class="text-coffee/70 mb-6">Organiza rutas de entrega y gestión de inventario para dark kitchens y múltiples sucursales.</p>
+</div>
+<div class="bg-white mx-8 mt-2 rounded-t-xl border border-b-0 border-coffee/10 h-48 p-0 overflow-hidden shadow-sm relative" data-location="Mexico City" style="https://lh3.googleusercontent.com/aida-public/AB6AXuBM6Z3c-XHAICvQIvCMI6U9sORS-jwqHYp9LxS2BOBK6SZ5Rv9XsU0XMMX6Gh28jnypBqifv7CTKsVMaCFH8zPBgpQbeTj1qCz6A_95Y7-ajGyMsKoffe5xRAupPcfHml7KF5_NQ-vYdJXsVpkKa2g5OCSuqvOo5aWqr4ZVfLbPa1xEt9TpgpX29uYtLU8oiRy4sWRlhEOAtZL-s08WciDYAS5f0GE145Ulgda7S_rHGqXqe7auoh3IRRdozwztES4CONYtVVsRWfY">
+<div class="w-full h-full bg-gray-200" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDyg9vP7ZaYMLkXQMt1JbHThqIwp-UdmaT39ZR1Uw3x3Nv-ozHpCg2NGfD16sHLCx971wTB1ku5rWRiXTjL5jxjMfLboYjv_ILJV6xPY5ormFDfrpW_80J7ue0NsSTx0RnmtE9RY07BzxYyKWJw6nlkjULdhgAQAhg5Dp7dVKW6X58RV9W-9r30Wz11hcmJRkCzTo7t7KMvOIWwkBCh0T5LYLeQIHYuyj9hYcgPteMuvmNgcjJm1Agc3yyM7rknATX_0LNQjYIYMkk'); background-size: cover;"></div>
+<div class="absolute top-8 left-12 size-3 bg-primary rounded-full ring-4 ring-primary/30"></div>
+<div class="absolute bottom-12 right-20 size-3 bg-coffee rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Social Proof -->
+<section class="py-20 bg-coffee text-cream relative overflow-hidden" id="testimonials">
+<div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none" style="background-image: radial-gradient(#d39e17 1px, transparent 1px); background-size: 20px 20px;"></div>
+<div class="max-w-4xl mx-auto px-6 relative z-10 text-center">
+<span class="material-symbols-outlined text-6xl text-primary/40 mb-6">format_quote</span>
+<blockquote class="text-2xl md:text-3xl font-medium leading-normal mb-10">
+                "Desde que usamos MasaMi, redujimos nuestra merma un 18% en el primer mes. Es como tener un gerente de costos trabajando 24/7, pero sin que se coma el pan."
+            </blockquote>
+<div class="flex items-center justify-center gap-4">
+<div class="size-16 rounded-full border-2 border-primary p-1">
+<img alt="Portrait of Chelito de Montiel" class="w-full h-full rounded-full object-cover grayscale hover:grayscale-0 transition-all" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYK1zwuiI4e8CdIABqivRD9Z_0YYgNKb5OietPoKu39mQ3-tdos71G2WEVwku-CLuOUUsEQtAbHRilvl8LhQFPakHlRSdexSHPHLPP7JCZz3yCyjW92DABmzpEyuGNyKRsIn7P7Q7fACuji191IXPFoMqI3xcPvF17lGucD_F24o3wAdIKItteFuxQ2PKnxcnSyf2uZo9sPvv2JJHff59qIKQA6rrYZdD8kQ4B3xTQRwc6nDxQvWc7gKtqO5IZao7m21TzQ4g_cJ4"/>
+</div>
+<div class="text-left">
+<div class="font-bold text-lg text-primary">Chelito de Montiel</div>
+<div class="text-sm text-cream/60">Dueña de "La Artesana"</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Pricing Section -->
+<section class="py-24 bg-cream relative" id="pricing">
+<div class="max-w-7xl mx-auto px-6">
+<div class="text-center mb-12">
+<h2 class="text-3xl md:text-4xl font-bold mb-4">Planes diseñados para panaderos</h2>
+<p class="text-coffee/70 mb-8">Elige la herramienta que mejor se adapte al tamaño de tu horno.</p>
+<!-- Toggle -->
+<div class="flex items-center justify-center gap-4 mb-8">
+<span class="text-sm font-bold text-coffee/60">Mensual</span>
+<button class="w-14 h-8 bg-coffee rounded-full relative transition-colors focus:outline-none ring-2 ring-offset-2 ring-transparent">
+<div class="absolute left-1 top-1 bg-primary w-6 h-6 rounded-full transition-transform translate-x-6"></div>
+</button>
+<span class="text-sm font-bold text-coffee">Anual <span class="text-primary text-xs ml-1">(Ahorra 2 meses)</span></span>
+</div>
+</div>
+<div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+<!-- Card 1 -->
+<div class="bg-white p-8 rounded-2xl border border-coffee/10 flex flex-col">
+<h3 class="text-lg font-bold text-coffee/60 uppercase tracking-widest mb-2">Emprendedor</h3>
+<div class="flex items-baseline gap-1 mb-6">
+<span class="text-4xl font-extrabold text-coffee">$499</span>
+<span class="text-coffee/60">/mes</span>
+</div>
+<p class="text-sm text-coffee/70 mb-8">Ideal para dark kitchens y panaderías caseras que inician.</p>
+<ul class="space-y-4 mb-8 flex-1">
+<li class="flex items-center gap-3 text-sm"><span class="material-symbols-outlined text-green-500 text-lg">check</span> 50 Recetas</li>
+<li class="flex items-center gap-3 text-sm"><span class="material-symbols-outlined text-green-500 text-lg">check</span> Costeo Básico</li>
+<li class="flex items-center gap-3 text-sm"><span class="material-symbols-outlined text-green-500 text-lg">check</span> 1 Usuario</li>
+</ul>
+<button class="w-full py-3 px-4 rounded-lg border-2 border-coffee text-coffee font-bold hover:bg-coffee hover:text-white transition-colors">
+                        Elegir Emprendedor
+                    </button>
+</div>
+<!-- Card 2 (Highlighted) -->
+<div class="bg-white p-8 rounded-2xl border-2 border-primary relative shadow-soft transform md:-translate-y-4 flex flex-col">
+<div class="absolute top-0 right-0 bg-primary text-coffee text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg">MÁS POPULAR</div>
+<h3 class="text-lg font-bold text-primary uppercase tracking-widest mb-2">Maestro</h3>
+<div class="flex items-baseline gap-1 mb-6">
+<span class="text-4xl font-extrabold text-coffee">$899</span>
+<span class="text-coffee/60">/mes</span>
+</div>
+<p class="text-sm text-coffee/70 mb-8">Para panaderías establecidas con equipo de producción.</p>
+<ul class="space-y-4 mb-8 flex-1">
+<li class="flex items-center gap-3 text-sm"><span class="material-symbols-outlined text-primary text-lg">check</span> Recetas Ilimitadas</li>
+<li class="flex items-center gap-3 text-sm"><span class="material-symbols-outlined text-primary text-lg">check</span> Planificador de Producción</li>
+<li class="flex items-center gap-3 text-sm"><span class="material-symbols-outlined text-primary text-lg">check</span> Alertas de Inflación</li>
+<li class="flex items-center gap-3 text-sm"><span class="material-symbols-outlined text-primary text-lg">check</span> 3 Usuarios + Contador</li>
+</ul>
+<button class="w-full py-3 px-4 rounded-lg bg-primary text-coffee font-bold hover:bg-primary-dark transition-colors shadow-lg shadow-primary/20">
+                        Elegir Maestro
+                    </button>
+</div>
+</div>
+</div>
+</section>
+<!-- FAQ Section -->
+<section class="py-20 bg-white" id="faq">
+<div class="max-w-3xl mx-auto px-6">
+<h2 class="text-3xl font-bold text-center mb-12">Preguntas Frecuentes</h2>
+<div class="space-y-4">
+<details class="group bg-cream rounded-xl p-4 [&amp;_summary::-webkit-details-marker]:hidden open:ring-1 open:ring-primary/20">
+<summary class="flex cursor-pointer items-center justify-between gap-1.5 text-coffee font-bold">
+<h3 class="text-lg">¿Qué necesito para usar MasaMi?</h3>
+<span class="material-symbols-outlined transition group-open:rotate-180">expand_more</span>
+</summary>
+<p class="mt-4 leading-relaxed text-coffee/70">
+                        Solo necesitas un dispositivo con acceso a internet (computadora, tablet o celular). No necesitas instalar nada, todo funciona en la nube.
+                    </p>
+</details>
+<details class="group bg-cream rounded-xl p-4 [&amp;_summary::-webkit-details-marker]:hidden open:ring-1 open:ring-primary/20">
+<summary class="flex cursor-pointer items-center justify-between gap-1.5 text-coffee font-bold">
+<h3 class="text-lg">¿Es difícil cargar mis recetas?</h3>
+<span class="material-symbols-outlined transition group-open:rotate-180">expand_more</span>
+</summary>
+<p class="mt-4 leading-relaxed text-coffee/70">
+                        Para nada. Hemos diseñado un asistente de carga rápida. Además, nuestro equipo de soporte te ayuda a migrar tus primeros productos para que empieces con el pie derecho.
+                    </p>
+</details>
+<details class="group bg-cream rounded-xl p-4 [&amp;_summary::-webkit-details-marker]:hidden open:ring-1 open:ring-primary/20">
+<summary class="flex cursor-pointer items-center justify-between gap-1.5 text-coffee font-bold">
+<h3 class="text-lg">¿Funciona si no soy una panadería?</h3>
+<span class="material-symbols-outlined transition group-open:rotate-180">expand_more</span>
+</summary>
+<p class="mt-4 leading-relaxed text-coffee/70">
+                        Sí, MasaMi funciona excelente para pizzerías, dark kitchens, repostería fina y cualquier negocio que base su producción en recetas y transformación de insumos.
+                    </p>
+</details>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="bg-coffee text-cream pt-20 pb-10">
+<div class="max-w-7xl mx-auto px-6">
+<div class="flex flex-col items-center text-center mb-16">
+<h2 class="text-3xl md:text-5xl font-bold mb-6 max-w-2xl">¿Listo para sacarle toda la miga a tu negocio?</h2>
+<div class="flex flex-col sm:flex-row gap-4 items-center">
+<button class="bg-primary hover:bg-primary-dark text-coffee text-lg font-bold py-3 px-10 rounded-xl transition-all shadow-glow hover:-translate-y-1">
+                        Prueba Gratis 14 Días
+                    </button>
+<a class="flex items-center gap-2 text-primary hover:text-white transition-colors font-medium" href="#">
+<span class="material-symbols-outlined">chat</span> Hablar por WhatsApp
+                    </a>
+</div>
+</div>
+<div class="border-t border-cream/10 pt-10 flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="flex items-center gap-2 opacity-80">
+<span class="material-symbols-outlined text-primary">bakery_dining</span>
+<span class="font-bold text-xl">MasaMi</span>
+</div>
+<div class="flex gap-8 text-sm text-cream/60">
+<a class="hover:text-primary transition-colors" href="#">Privacidad</a>
+<a class="hover:text-primary transition-colors" href="#">Términos</a>
+<a class="hover:text-primary transition-colors" href="#">Soporte</a>
+</div>
+<div class="text-sm text-cream/40">
+                    © 2024 MasaMi Tech. Hecho con harina y código.
+                </div>
+</div>
+</div>
+</footer>
+</body></html>

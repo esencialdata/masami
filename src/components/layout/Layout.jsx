@@ -1,14 +1,15 @@
 import React from 'react';
-import { LayoutDashboard, Users, Settings, Package, Croissant, LogOut, Calendar, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, Users, Settings, Package, Calendar, BarChart3 } from 'lucide-react';
 import { TransactionFABS } from '../transactions/TransactionFABS';
 
-const Layout = ({ children, activeTab, setActiveTab, onTransactionAdded }) => {
+const Layout = ({ children, activeTab, setActiveTab, onTransactionAdded, onLogout }) => {
     return (
-        <div className="min-h-screen bg-background flex">
+        <div className="min-h-screen bg-background-light text-text-main-light flex transition-colors duration-300">
             {/* Sidebar - Desktop/Tablet */}
-            <aside className="hidden md:flex w-64 flex-col bg-white border-r border-gray-100 h-screen fixed left-0 top-0 z-50">
+            <aside className="hidden md:flex w-64 flex-col bg-surface-light border-r border-border-light h-screen fixed left-0 top-0 z-50 transition-colors duration-300">
                 <div className="p-8 flex items-center gap-3">
-                    <img src="/logo_chelito.svg" alt="Chelito" className="h-16 w-auto" />
+                    {/* Placeholder for Logo if svg not suitable for dark mode, or use brightness filter */}
+                    <img src="/logo_chelito.svg" alt="Masami" className="h-16 w-auto" />
                 </div>
 
                 <nav className="flex-1 px-4 space-y-2 py-4">
@@ -43,7 +44,7 @@ const Layout = ({ children, activeTab, setActiveTab, onTransactionAdded }) => {
                         onClick={() => setActiveTab('reports')}
                     />
                     <div className="pt-8 px-4">
-                        <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Sistema</span>
+                        <span className="text-xs font-bold text-text-sec-light uppercase tracking-widest">Sistema</span>
                     </div>
                     <SidebarLink
                         icon={<Settings size={20} />}
@@ -53,25 +54,28 @@ const Layout = ({ children, activeTab, setActiveTab, onTransactionAdded }) => {
                     />
                 </nav>
 
-                <div className="p-4 border-t border-gray-100">
-                    <button className="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-gray-50 text-gray-600 transition-colors">
-                        <img src="/app_icon.svg" alt="User" className="w-10 h-10 rounded-full border border-gray-100 p-1" />
+                <div className="p-4 border-t border-border-light">
+                    <button
+                        onClick={onLogout}
+                        className="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-black/5 text-text-sec-light transition-colors group"
+                    >
+                        <img src="/app_icon.svg" alt="User" className="w-10 h-10 rounded-full border border-border-light p-1" />
                         <div className="text-left">
-                            <p className="text-sm font-bold text-gray-900">Chelito De Montiel</p>
-                            <p className="text-xs text-gray-500">Cerrar Sesión</p>
+                            <p className="text-sm font-bold text-text-main-light group-hover:text-primary transition-colors">Masami User</p>
+                            <p className="text-xs opacity-70">Cerrar Sesión</p>
                         </div>
                     </button>
                 </div>
             </aside>
 
             {/* Mobile Header */}
-            <header className="md:hidden fixed top-0 left-0 right-0 bg-white p-4 shadow-sm z-50 flex items-center justify-center border-b border-gray-100">
-                <img src="/logo_chelito.svg" alt="Chelito" className="h-16 w-auto" />
+            <header className="md:hidden fixed top-0 left-0 right-0 bg-surface-light p-4 shadow-sm z-50 flex items-center justify-center border-b border-border-light transition-colors duration-300">
+                <img src="/logo_chelito.svg" alt="Masami" className="h-12 w-auto" />
             </header>
 
             {/* Main Content */}
-            <main className="flex-1 md:ml-64 p-4 md:p-8 pt-28 md:pt-8 bg-background min-h-screen">
-                <div className="max-w-7xl mx-auto h-full">
+            <main className="flex-1 md:ml-64 p-4 md:p-8 pt-24 md:pt-8 min-h-screen overflow-x-hidden">
+                <div className="max-w-7xl mx-auto h-full animate-in fade-in duration-500">
                     {children}
                 </div>
             </main>
@@ -79,7 +83,7 @@ const Layout = ({ children, activeTab, setActiveTab, onTransactionAdded }) => {
             <TransactionFABS onTransactionAdded={onTransactionAdded} />
 
             {/* Bottom Nav - Mobile Only */}
-            <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 pb-safe">
+            <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface-light border-t border-border-light shadow-lg z-50 pb-safe transition-colors duration-300">
                 <div className="flex justify-around items-center h-16">
                     <NavButton
                         icon={<LayoutDashboard size={24} />}
@@ -114,26 +118,26 @@ const Layout = ({ children, activeTab, setActiveTab, onTransactionAdded }) => {
 const SidebarLink = ({ icon, label, isActive, onClick }) => (
     <button
         onClick={onClick}
-        className={`flex items-center gap-3 w-full p-3 rounded-xl transition-all duration-200 font-medium text-sm
+        className={`flex items-center gap-3 w-full p-3 rounded-xl transition-all duration-200 font-medium text-sm border border-transparent
             ${isActive
-                ? 'bg-primary text-white shadow-md shadow-primary/20'
-                : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                ? 'bg-primary/10 text-primary border-primary/20'
+                : 'text-text-sec-light hover:bg-black/5 hover:text-text-main-light'
             }`}
     >
         {icon}
         <span>{label}</span>
-        {isActive && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white/50" />}
+        {isActive && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary shadow shadow-primary" />}
     </button>
 );
 
 const NavButton = ({ icon, label, isActive, onClick }) => (
     <button
         onClick={onClick}
-        className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive ? 'text-primary font-bold' : 'text-gray-500'
-            }`}
+        className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors duration-200 ${isActive ? 'text-primary font-bold scale-105' : 'text-text-sec-light'}
+            `}
     >
         {icon}
-        <span className="text-xs">{label}</span>
+        <span className="text-[10px]">{label}</span>
     </button>
 );
 

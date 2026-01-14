@@ -1,12 +1,42 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #d39e17;
-  --color-success: #84A98C;
-  --color-background: #F9F7F2;
+  --color-primary: #f47b25;
+  --color-primary-dark: #d66212;
+  --color-primary-hover: #d96515;
+
+  --color-background-light: #f8f7f5;
+  --color-background-dark: #221710;
+
+  --color-surface-light: #ffffff;
+  --color-surface-dark: #2d241e;
+
+  --color-text-main-light: #1c130d;
+  --color-text-main-dark: #eaddd5;
+
+  --color-text-sec-light: #9c6c49;
+  --color-text-sec-dark: #bcaaa4;
+
+  --color-success: #16a34a;
+  --color-danger: #dc2626;
+
+  --color-subtle-light: #f4ece7;
+  --color-subtle-dark: #3a2e26;
+
+  --color-border-light: #e8d9ce;
+  --color-border-dark: #4a3b32;
+
+  --font-display: "Inter", sans-serif;
+
+  /* Landing Page Branding */
+  --color-brand-gold: #d39e17;
+  --color-brand-coffee: #3E2723;
+  --color-brand-coffee-light: #5D4037;
+  --color-brand-cream: #F9F7F2;
+  --color-brand-cream-dark: #EFEBE0;
 }
 
 body {
-  background-color: var(--color-background);
-  color: #1f2937;
+  background-color: var(--color-background-light);
+  color: var(--color-text-main-light);
 }
