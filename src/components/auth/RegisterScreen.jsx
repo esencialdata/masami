@@ -56,64 +56,32 @@ export default function RegisterScreen({ onLogin }) {
         setError(null);
 
         try {
-            // 1. SignUp User
-            const { data: { user }, error: signUpError } = await supabase.auth.signUp({
+            // 1. SignUp User with Metadata
+            // This triggers the 'handle_new_user' DB function which creates Profile & Tenant automatically
+            const { data: { user, session }, error: signUpError } = await supabase.auth.signUp({
                 email: formData.email,
                 password: formData.password,
                 options: {
-                    data: { full_name: formData.name }
+                    data: {
+                        full_name: formData.name,
+                        business_name: inviteParams ? null : formData.businessName, // Sent only if creating new tenant
+                        invite_tenant_id: inviteParams?.tenantId,
+                        invite_role: inviteParams?.role
+                    }
                 }
             });
 
             if (signUpError) throw signUpError;
 
             if (user) {
-                if (inviteParams) {
-                    // FLOW A: JOINING EXISTING TEAM
-                    // Directly insert profile linked to tenant
-                    const { error: profileError } = await supabase
-                        .from('profiles')
-                        .insert({
-                            id: user.id,
-                            tenant_id: inviteParams.tenantId,
-                            role: inviteParams.role,
-                            full_name: formData.name,
-                            is_active: true
-                        });
+                // Success! 
+                // Initial session might be shaky until trigger completes, but usually works fine.
+                // We reload to force app re-init with correct context (profile usually created by now)
 
-                    if (profileError) throw profileError;
-
-                } else {
-                    // FLOW B: CREATING NEW TENANT (Default)
-                    // 2. Create Tenant & Link Owner (via RPC)
-                    const { data: tenantId, error: rpcError } = await supabase.rpc('create_tenant_and_owner', {
-                        tenant_name: formData.businessName,
-                        owner_id: user.id
-                    });
-
-                    if (rpcError) throw rpcError;
-
-                    // 3. Data Seeding (Ingredients)
-                    if (tenantId) {
-                        const suppliesToInsert = DEFAULT_INGREDIENTS.map(item => ({
-                            ...item,
-                            tenant_id: tenantId,
-                            current_stock: 0,
-                            history: []
-                        }));
-
-                        const { error: seedError } = await supabase
-                            .from('supplies')
-                            .insert(suppliesToInsert);
-
-                        if (seedError) {
-                            console.error('Seeding error:', seedError);
-                        }
-                    }
-                }
-
-                // Success
-                window.location.href = '/'; // Hard redirect to clear params and reload state
+                // Optional: Short delay or check if profile exists, but reload is safest for full context
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 1000);
             }
         } catch (err) {
             console.error(err);
