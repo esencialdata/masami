@@ -37,7 +37,7 @@ const LoginScreen = ({ onLogin, onBack }) => {
           </button>
         )}
         <img src="/app_icon.svg" className="w-20 h-20 mx-auto mb-6 rounded-2xl shadow-sm border border-brand-coffee/5" alt="Logo" />
-        <h1 className="text-2xl font-bold text-brand-coffee mb-2">Bienvenido a MasaMi</h1>
+        <h1 className="text-2xl font-bold text-brand-coffee mb-2">Bienvenido a Miga</h1>
         <p className="text-brand-coffee/60 mb-6 text-sm">Gestiona tu negocio de forma inteligente</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">

@@ -9,7 +9,7 @@ const Layout = ({ children, activeTab, setActiveTab, onTransactionAdded, onLogou
             <aside className="hidden md:flex w-64 flex-col bg-surface-light border-r border-border-light h-screen fixed left-0 top-0 z-50 transition-colors duration-300">
                 <div className="p-8 flex items-center gap-3">
                     {/* Placeholder for Logo if svg not suitable for dark mode, or use brightness filter */}
-                    <img src="/logo_chelito.svg" alt="Masami" className="h-16 w-auto" />
+                    <img src="/logo-miga.svg" alt="Miga" className="h-16 w-auto" />
                 </div>
 
                 <nav className="flex-1 px-4 space-y-2 py-4">
@@ -61,7 +61,7 @@ const Layout = ({ children, activeTab, setActiveTab, onTransactionAdded, onLogou
                     >
                         <img src="/app_icon.svg" alt="User" className="w-10 h-10 rounded-full border border-border-light p-1" />
                         <div className="text-left">
-                            <p className="text-sm font-bold text-text-main-light group-hover:text-primary transition-colors">Masami User</p>
+                            <p className="text-sm font-bold text-text-main-light group-hover:text-primary transition-colors">Miga User</p>
                             <p className="text-xs opacity-70">Cerrar Sesión</p>
                         </div>
                     </button>
@@ -70,7 +70,7 @@ const Layout = ({ children, activeTab, setActiveTab, onTransactionAdded, onLogou
 
             {/* Mobile Header */}
             <header className="md:hidden fixed top-0 left-0 right-0 bg-surface-light p-4 shadow-sm z-50 flex items-center justify-center border-b border-border-light transition-colors duration-300">
-                <img src="/logo_chelito.svg" alt="Masami" className="h-12 w-auto" />
+                <img src="/logo-miga.svg" alt="Miga" className="h-12 w-auto" />
             </header>
 
             {/* Main Content */}
@@ -142,4 +142,3 @@ const NavButton = ({ icon, label, isActive, onClick }) => (
 );
 
 export default Layout;
-

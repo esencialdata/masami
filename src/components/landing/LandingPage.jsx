@@ -18,10 +18,9 @@ const LandingPage = ({ onLogin }) => {
             <nav className="fixed top-0 left-0 right-0 z-50 bg-brand-cream/90 backdrop-blur-md border-b border-brand-coffee/5 transition-all duration-300">
                 <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 text-brand-gold flex items-center justify-center">
-                            <span className="material-symbols-outlined text-4xl">bakery_dining</span>
+                        <div className="h-12 flex items-center justify-center">
+                            <img src="/logo-miga.svg" alt="Miga" className="h-full w-auto object-contain" />
                         </div>
-                        <span className="text-xl font-bold tracking-tight text-brand-coffee">MasaMi</span>
                     </div>
                     <div className="hidden md:flex items-center gap-8">
                         {['Características', 'Precios', 'Testimonios', 'FAQ'].map((item) => (
@@ -106,7 +105,7 @@ const LandingPage = ({ onLogin }) => {
                                 {/* Mock Header */}
                                 <div className="px-4 py-2 flex justify-between items-center border-b border-brand-coffee/5">
                                     <span className="material-symbols-outlined text-brand-coffee">menu</span>
-                                    <span className="text-sm font-bold text-brand-coffee">MasaMi</span>
+                                    <span className="text-sm font-bold text-brand-coffee">Miga</span>
                                     <div className="w-6 h-6 bg-brand-gold rounded-full"></div>
                                 </div>
                                 {/* Mock Dashboard */}
@@ -219,7 +218,7 @@ const LandingPage = ({ onLogin }) => {
                                 <span className="text-brand-gold">ahora es Digital e Inteligente.</span>
                             </h2>
                             <p className="text-brand-coffee/70 text-lg">
-                                Deja de luchar con hojas de cálculo complicadas o libretas manchadas de harina. MasaMi centraliza todo tu negocio en un solo lugar.
+                                Deja de luchar con hojas de cálculo complicadas o libretas manchadas de harina. Miga centraliza todo tu negocio en un solo lugar.
                             </p>
 
                             <div className="space-y-4 pt-4">
@@ -238,7 +237,7 @@ const LandingPage = ({ onLogin }) => {
                                         <span className="material-symbols-outlined text-brand-gold">check</span>
                                     </div>
                                     <div>
-                                        <h4 className="font-bold text-brand-coffee">Sistema MasaMi</h4>
+                                        <h4 className="font-bold text-brand-coffee">Sistema Miga</h4>
                                         <p className="text-sm text-brand-coffee/60">Control total, costos automáticos y paz mental.</p>
                                     </div>
                                 </div>
@@ -267,7 +266,7 @@ const LandingPage = ({ onLogin }) => {
                             Diseñado para creadores exigentes
                         </h2>
                         <p className="text-xl text-brand-coffee/60">
-                            MasaMi se adapta a tu modelo de negocio, eliminando el caos operativo desde el primer día.
+                            Miga se adapta a tu modelo de negocio, eliminando el caos operativo desde el primer día.
                         </p>
                     </div>
 
@@ -319,98 +318,221 @@ const LandingPage = ({ onLogin }) => {
                 </div>
             </section>
 
-            {/* Features Section */}
-            <section className="py-20 bg-white" id="features">
-                <div className="max-w-7xl mx-auto px-6">
-                    <div className="text-center mb-16">
+            {/* 3 Pillars Section (Zig-Zag) */}
+            <section className="py-20 bg-white overflow-hidden" id="features">
+                <div className="max-w-7xl mx-auto px-6 space-y-32">
+
+                    {/* Header */}
+                    <div className="text-center max-w-3xl mx-auto mb-20">
                         <span className="text-brand-gold font-bold tracking-wider uppercase text-sm">Características Principales</span>
-                        <h2 className="text-3xl md:text-4xl font-bold mt-2 text-brand-coffee">Todo lo que necesitas para crecer</h2>
+                        <h2 className="text-3xl md:text-5xl font-bold mt-4 text-brand-coffee leading-tight">
+                            El sistema operativo que tu panadería necesita
+                        </h2>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-8">
-                        {/* Feature 1 */}
-                        <div className="bg-brand-cream rounded-2xl overflow-hidden border border-brand-coffee/5 hover:shadow-lg transition-all">
-                            <div className="p-8 pb-0">
-                                <h3 className="text-xl font-bold mb-2 flex items-center gap-2 text-brand-coffee">
-                                    <span className="material-symbols-outlined text-brand-gold">science</span> Ingeniería de Receta
-                                </h3>
-                                <p className="text-brand-coffee/70 mb-6">Calcula el costo exacto de cada gramo. Ajusta rendimientos y detecta fugas de dinero en tus formulaciones.</p>
+                    {/* Block 1: Recipe Engineering */}
+                    <div className="flex flex-col lg:flex-row items-center gap-16">
+                        <div className="lg:w-1/2 space-y-6">
+                            <div className="w-16 h-16 bg-brand-cream rounded-2xl flex items-center justify-center border border-brand-coffee/5 shadow-sm">
+                                <span className="material-symbols-outlined text-3xl text-brand-gold">science</span>
                             </div>
-                            <div className="bg-white mx-8 mt-2 rounded-t-xl border border-b-0 border-brand-coffee/10 h-48 p-4 shadow-sm">
-                                <div className="flex flex-col gap-2">
-                                    <div className="h-4 bg-gray-100 rounded w-1/3"></div>
-                                    <div className="space-y-2 mt-2">
-                                        <div className="flex justify-between text-xs text-gray-400 border-b pb-1"><span>Harina Trigo</span><span>$12.50/kg</span></div>
-                                        <div className="flex justify-between text-xs text-gray-400 border-b pb-1"><span>Mantequilla</span><span>$85.00/kg</span></div>
-                                        <div className="flex justify-between text-xs text-gray-400 border-b pb-1"><span>Huevo</span><span>$42.00/kg</span></div>
-                                    </div>
-                                </div>
-                            </div>
+                            <h3 className="text-3xl md:text-4xl font-bold text-brand-coffee">No es magia, es Ingeniería.</h3>
+                            <p className="text-lg text-brand-coffee/70 leading-relaxed">
+                                Deja de calcular al tanteo. Miga desglosa tus costos al centavo, permitiéndote ajustar precios con confianza y detectar fugas invisibles.
+                            </p>
                         </div>
-
-                        {/* Feature 2 */}
-                        <div className="bg-brand-cream rounded-2xl overflow-hidden border border-brand-coffee/5 hover:shadow-lg transition-all">
-                            <div className="p-8 pb-0">
-                                <h3 className="text-xl font-bold mb-2 flex items-center gap-2 text-brand-coffee">
-                                    <span className="material-symbols-outlined text-brand-gold">calendar_month</span> Planificador de Producción
-                                </h3>
-                                <p className="text-brand-coffee/70 mb-6">Genera listas de producción diarias basadas en pedidos reales y proyecciones de venta.</p>
-                            </div>
-                            <div className="bg-white mx-8 mt-2 rounded-t-xl border border-b-0 border-brand-coffee/10 h-48 p-4 shadow-sm">
-                                <div className="grid grid-cols-4 gap-2 h-full">
-                                    <div className="bg-brand-gold/10 rounded-lg p-2 flex flex-col items-center gap-1">
-                                        <span className="text-[10px] font-bold text-brand-gold">LUN</span>
-                                        <div className="w-full h-1 bg-brand-gold rounded"></div>
-                                        <div className="w-full h-1 bg-brand-gold/50 rounded"></div>
+                        <div className="lg:w-1/2 w-full">
+                            {/* Visual: Cost Breakdown Mockup */}
+                            <div className="bg-brand-cream rounded-3xl p-6 border border-brand-coffee/5 shadow-2xl relative transform rotate-2 hover:rotate-0 transition-transform duration-500">
+                                <div className="bg-white rounded-2xl shadow-sm border border-brand-coffee/5 overflow-hidden">
+                                    <div className="p-4 border-b border-brand-coffee/5 flex justify-between items-center bg-brand-gold/5">
+                                        <div className="font-bold text-brand-coffee">Rosca de Reyes Tradicional</div>
+                                        <div className="text-sm font-bold text-green-600 bg-green-100 px-2 py-1 rounded">Costo: $45.50</div>
                                     </div>
-                                    {['MAR', 'MIE', 'JUE'].map(day => (
-                                        <div key={day} className="bg-gray-50 rounded-lg p-2 flex flex-col items-center gap-1">
-                                            <span className="text-[10px] font-bold text-gray-400">{day}</span>
-                                            <div className="w-full h-1 bg-gray-300 rounded"></div>
+                                    <div className="p-4 space-y-3">
+                                        <div className="flex justify-between items-center text-sm">
+                                            <div className="flex items-center gap-2 text-brand-coffee/80">
+                                                <div className="w-2 h-2 rounded-full bg-brand-gold"></div>
+                                                Harina de Trigo (500g)
+                                            </div>
+                                            <span className="font-mono text-brand-coffee/60">$8.50</span>
                                         </div>
-                                    ))}
+                                        <div className="flex justify-between items-center text-sm">
+                                            <div className="flex items-center gap-2 text-brand-coffee/80">
+                                                <div className="w-2 h-2 rounded-full bg-orange-400"></div>
+                                                Mantequilla Gloria (150g)
+                                            </div>
+                                            <span className="font-mono text-brand-coffee/60">$28.20</span>
+                                        </div>
+                                        <div className="flex justify-between items-center text-sm">
+                                            <div className="flex items-center gap-2 text-brand-coffee/80">
+                                                <div className="w-2 h-2 rounded-full bg-yellow-400"></div>
+                                                Huevo Líquido (3pz)
+                                            </div>
+                                            <span className="font-mono text-brand-coffee/60">$6.30</span>
+                                        </div>
+                                        <div className="pt-2 mt-2 border-t border-dashed border-brand-coffee/10 flex justify-between items-center">
+                                            <span className="text-xs font-bold text-brand-coffee/50 uppercase tracking-widest">Margen Sugerido (35%)</span>
+                                            <span className="font-bold text-brand-coffee">$130.00</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                {/* Floating Badge */}
+                                <div className="absolute -bottom-4 -left-4 bg-brand-coffee text-brand-gold px-4 py-2 rounded-lg shadow-lg text-sm font-bold flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-lg">check_circle</span>
+                                    Costeado
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        {/* Feature 3 */}
-                        <div className="bg-brand-cream rounded-2xl overflow-hidden border border-brand-coffee/5 hover:shadow-lg transition-all">
-                            <div className="p-8 pb-0">
-                                <h3 className="text-xl font-bold mb-2 flex items-center gap-2 text-brand-coffee">
-                                    <span className="material-symbols-outlined text-brand-gold">trending_up</span> Detector de Inflación
-                                </h3>
-                                <p className="text-brand-coffee/70 mb-6">MasaMi te alerta cuando el precio de un insumo sube y afecta tu margen de ganancia.</p>
+                    {/* Block 2: Production Planner */}
+                    <div className="flex flex-col lg:flex-row-reverse items-center gap-16">
+                        <div className="lg:w-1/2 space-y-6">
+                            <div className="w-16 h-16 bg-brand-cream rounded-2xl flex items-center justify-center border border-brand-coffee/5 shadow-sm">
+                                <span className="material-symbols-outlined text-3xl text-brand-gold">calendar_month</span>
                             </div>
-                            <div className="bg-white mx-8 mt-2 rounded-t-xl border border-b-0 border-brand-coffee/10 h-48 p-4 relative shadow-sm">
-                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white shadow-md border border-red-100 p-3 rounded-lg flex items-center gap-3 w-5/6">
-                                    <div className="bg-red-100 p-2 rounded-full text-red-500">
-                                        <span className="material-symbols-outlined text-sm">warning</span>
+                            <h3 className="text-3xl md:text-4xl font-bold text-brand-coffee">Tu Jefe de Producción Digital.</h3>
+                            <p className="text-lg text-brand-coffee/70 leading-relaxed">
+                                Genera automáticamente tu lista de horneado basada en pedidos reales. Nunca más hornearás de menos (perdiendo ventas) ni de más (tirando dinero).
+                            </p>
+                        </div>
+                        <div className="lg:w-1/2 w-full">
+                            {/* Visual: Baking List Mockup */}
+                            <div className="bg-brand-coffee rounded-3xl p-6 shadow-2xl relative transform -rotate-1 hover:rotate-0 transition-transform duration-500">
+                                <div className="bg-white rounded-2xl overflow-hidden shadow-inner">
+                                    <div className="bg-gray-50 p-4 border-b border-gray-100 flex justify-between items-center">
+                                        <span className="font-bold text-brand-coffee">Producción: Martes 14</span>
+                                        <span className="text-xs text-brand-coffee/50 bg-white border border-gray-200 px-2 py-1 rounded-full">Turno AM</span>
                                     </div>
-                                    <div>
-                                        <div className="text-xs font-bold text-brand-coffee">Alerta de Precio</div>
-                                        <div className="text-[10px] text-gray-500">Azúcar subió un 5%</div>
+                                    <div className="p-0">
+                                        {[
+                                            { item: 'Conchas Vainilla', qty: 50, done: true },
+                                            { item: 'Croissants', qty: 32, done: false },
+                                            { item: 'Baguette Tradicional', qty: 15, done: false },
+                                            { item: 'Muffins Choco', qty: 24, done: false }
+                                        ].map((row, i) => (
+                                            <div key={i} className={`flex items-center gap-4 p-4 border-b border-gray-50 last:border-0 hover:bg-brand-cream/30 transition-colors ${row.done ? 'bg-brand-cream/10' : ''}`}>
+                                                <div className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-colors ${row.done ? 'bg-green-500 border-green-500' : 'border-gray-300'}`}>
+                                                    {row.done && <span className="material-symbols-outlined text-white text-sm">check</span>}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <div className={`font-medium ${row.done ? 'text-gray-400 line-through' : 'text-brand-coffee'}`}>{row.item}</div>
+                                                </div>
+                                                <div className={`font-bold ${row.done ? 'text-gray-400' : 'text-brand-gold'}`}>{row.qty} pzas</div>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        {/* Feature 4 */}
-                        <div className="bg-brand-cream rounded-2xl overflow-hidden border border-brand-coffee/5 hover:shadow-lg transition-all">
-                            <div className="p-8 pb-0">
-                                <h3 className="text-xl font-bold mb-2 flex items-center gap-2 text-brand-coffee">
-                                    <span className="material-symbols-outlined text-brand-gold">local_shipping</span> Logística Inteligente
-                                </h3>
-                                <p className="text-brand-coffee/70 mb-6">Organiza rutas de entrega y gestión de inventario para dark kitchens y múltiples sucursales.</p>
+                    {/* Block 3: Financial Intelligence */}
+                    <div className="flex flex-col lg:flex-row items-center gap-16">
+                        <div className="lg:w-1/2 space-y-6">
+                            <div className="w-16 h-16 bg-brand-cream rounded-2xl flex items-center justify-center border border-brand-coffee/5 shadow-sm">
+                                <span className="material-symbols-outlined text-3xl text-brand-gold">trending_up</span>
                             </div>
-                            <div className="bg-white mx-8 mt-2 rounded-t-xl border border-b-0 border-brand-coffee/10 h-48 p-0 overflow-hidden shadow-sm relative">
-                                <div className="w-full h-full bg-gray-200 relative">
-                                    <div className="absolute top-8 left-12 w-3 h-3 bg-brand-gold rounded-full ring-4 ring-brand-gold/30"></div>
-                                    <div className="absolute bottom-12 right-20 w-3 h-3 bg-brand-coffee rounded-full"></div>
-                                    {/* Map-like lines */}
-                                    <svg className="absolute inset-0 w-full h-full pointer-events-none">
-                                        <path d="M 60 44 Q 150 100 250 150" stroke="#d39e17" strokeWidth="2" fill="none" strokeDasharray="4 4" />
-                                    </svg>
+                            <h3 className="text-3xl md:text-4xl font-bold text-brand-coffee">Escudo contra la Inflación.</h3>
+                            <p className="text-lg text-brand-coffee/70 leading-relaxed">
+                                ¿Subió el azúcar? Te avisamos al instante. Visualiza tu utilidad neta en tiempo real y detecta qué productos son tus estrellas y cuáles tus lastres.
+                            </p>
+                        </div>
+                        <div className="lg:w-1/2 w-full">
+                            {/* Visual: Dashboard/Alert Mockup */}
+                            <div className="bg-white rounded-3xl p-8 border border-brand-coffee/10 shadow-2xl relative">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-brand-gold/5 rounded-bl-full -z-10"></div>
+
+                                <div className="mb-6">
+                                    <div className="text-sm text-brand-coffee/60 mb-1">Utilidad Neta (Hoy)</div>
+                                    <div className="text-4xl font-extrabold text-brand-coffee">$2,840.00</div>
+                                    <div className="text-green-500 text-sm font-bold flex items-center gap-1 mt-1">
+                                        <span className="material-symbols-outlined text-lg">arrow_upward</span> +12% vs ayer
+                                    </div>
                                 </div>
+
+                                <div className="space-y-4">
+                                    <div className="bg-red-50 rounded-xl p-4 border border-red-100 flex items-start gap-3 animate-pulse duration-1000">
+                                        <div className="bg-red-100 p-2 rounded-full mt-1">
+                                            <span className="material-symbols-outlined text-red-500 text-sm">priority_high</span>
+                                        </div>
+                                        <div>
+                                            <div className="font-bold text-brand-coffee text-sm">Alerta de Insumo</div>
+                                            <p className="text-xs text-brand-coffee/70 mt-0.5">El precio del <strong>Azúcar Estándar</strong> subió un 15%. Actualiza tus costos.</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="h-32 flex items-end justify-between gap-2 px-2 pb-2 border-b border-brand-coffee/5">
+                                        {[40, 65, 45, 80, 55, 90, 70].map((h, i) => (
+                                            <div key={i} className="w-full bg-brand-gold rounded-t-sm opacity-80 hover:opacity-100 transition-opacity" style={{ height: `${h}%` }}></div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            {/* Secondary Grid Section (Bento Grid) */}
+            <section className="py-24 bg-brand-cream/30">
+                <div className="max-w-5xl mx-auto px-6">
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl font-bold text-brand-coffee">Todo lo que necesitas para operar sin caos</h2>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-6">
+                        {/* Card 1 */}
+                        <div className="bg-white p-8 rounded-2xl border border-brand-coffee/5 shadow-sm hover:shadow-md transition-shadow flex items-start gap-4">
+                            <div className="bg-brand-cream p-3 rounded-xl shrink-0">
+                                <span className="material-symbols-outlined text-brand-gold text-2xl">delete_forever</span>
+                            </div>
+                            <div>
+                                <h4 className="text-lg font-bold text-brand-coffee mb-2">Reporte de Mermas</h4>
+                                <p className="text-brand-coffee/70 text-sm leading-relaxed">
+                                    Registra desperdicios al momento. Convierte el 'se me quemó' en un dato financiero para reducir pérdidas.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Card 2 */}
+                        <div className="bg-white p-8 rounded-2xl border border-brand-coffee/5 shadow-sm hover:shadow-md transition-shadow flex items-start gap-4">
+                            <div className="bg-brand-cream p-3 rounded-xl shrink-0">
+                                <span className="material-symbols-outlined text-brand-gold text-2xl">check_circle</span>
+                            </div>
+                            <div>
+                                <h4 className="text-lg font-bold text-brand-coffee mb-2">Rutinas de Cierre</h4>
+                                <p className="text-brand-coffee/70 text-sm leading-relaxed">
+                                    Checklists digitales para asegurar que hornos y gas se apaguen siempre antes de irse.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Card 3 */}
+                        <div className="bg-white p-8 rounded-2xl border border-brand-coffee/5 shadow-sm hover:shadow-md transition-shadow flex items-start gap-4">
+                            <div className="bg-brand-cream p-3 rounded-xl shrink-0">
+                                <span className="material-symbols-outlined text-brand-gold text-2xl">local_shipping</span>
+                            </div>
+                            <div>
+                                <h4 className="text-lg font-bold text-brand-coffee mb-2">Logística Inteligente</h4>
+                                <p className="text-brand-coffee/70 text-sm leading-relaxed">
+                                    Organiza repartos por Colonias y Zonas para optimizar tus rutas de entrega.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Card 4 */}
+                        <div className="bg-white p-8 rounded-2xl border border-brand-coffee/5 shadow-sm hover:shadow-md transition-shadow flex items-start gap-4">
+                            <div className="bg-brand-cream p-3 rounded-xl shrink-0">
+                                <span className="material-symbols-outlined text-brand-gold text-2xl">inventory_2</span>
+                            </div>
+                            <div>
+                                <h4 className="text-lg font-bold text-brand-coffee mb-2">Control de Stock</h4>
+                                <p className="text-brand-coffee/70 text-sm leading-relaxed">
+                                    Alertas automáticas antes de que te quedes sin empaques o insumos críticos.
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -423,7 +545,7 @@ const LandingPage = ({ onLogin }) => {
                 <div className="max-w-4xl mx-auto px-6 relative z-10 text-center">
                     <span className="material-symbols-outlined text-6xl text-brand-gold/40 mb-6">format_quote</span>
                     <blockquote className="text-2xl md:text-3xl font-medium leading-normal mb-10 text-brand-cream">
-                        "Desde que usamos MasaMi, redujimos nuestra merma un 18% en el primer mes. Es como tener un gerente de costos trabajando 24/7, pero sin que se coma el pan."
+                        "Desde que usamos Miga, redujimos nuestra merma un 18% en el primer mes. Es como tener un gerente de costos trabajando 24/7, pero sin que se coma el pan."
                     </blockquote>
                     <div className="flex items-center justify-center gap-4">
                         <div className="w-16 h-16 rounded-full border-2 border-brand-gold p-1 bg-brand-coffee">
@@ -437,10 +559,10 @@ const LandingPage = ({ onLogin }) => {
                         </div>
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* Pricing Section */}
-            <section className="py-24 bg-brand-cream relative" id="pricing">
+            < section className="py-24 bg-brand-cream relative" id="pricing" >
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="text-center mb-12">
                         <h2 className="text-3xl md:text-4xl font-bold mb-4 text-brand-coffee">Planes diseñados para panaderos</h2>
@@ -507,17 +629,17 @@ const LandingPage = ({ onLogin }) => {
                         </div>
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* FAQ Section */}
-            <section className="py-20 bg-white" id="faq">
+            < section className="py-20 bg-white" id="faq" >
                 <div className="max-w-3xl mx-auto px-6">
                     <h2 className="text-3xl font-bold text-center mb-12 text-brand-coffee">Preguntas Frecuentes</h2>
                     <div className="space-y-4">
                         {[
-                            { q: "¿Qué necesito para usar MasaMi?", a: "Solo necesitas un dispositivo con acceso a internet (computadora, tablet o celular). No necesitas instalar nada, todo funciona en la nube." },
+                            { q: "¿Qué necesito para usar Miga?", a: "Solo necesitas un dispositivo con acceso a internet (computadora, tablet o celular). No necesitas instalar nada, todo funciona en la nube." },
                             { q: "¿Es difícil cargar mis recetas?", a: "Para nada. Hemos diseñado un asistente de carga rápida. Además, nuestro equipo de soporte te ayuda a migrar tus primeros productos para que empieces con el pie derecho." },
-                            { q: "¿Funciona si no soy una panadería?", a: "Sí, MasaMi funciona excelente para pizzerías, dark kitchens, repostería fina y cualquier negocio que base su producción en recetas y transformación de insumos." }
+                            { q: "¿Funciona si no soy una panadería?", a: "Sí, Miga funciona excelente para pizzerías, dark kitchens, repostería fina y cualquier negocio que base su producción en recetas y transformación de insumos." }
                         ].map((item, idx) => (
                             <div key={idx} className="group bg-brand-cream rounded-xl p-4 cursor-pointer border border-brand-coffee/5" onClick={() => toggleFaq(idx)}>
                                 <div className="flex items-center justify-between gap-1.5 text-brand-coffee font-bold">
@@ -533,10 +655,10 @@ const LandingPage = ({ onLogin }) => {
                         ))}
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* Footer */}
-            <footer className="bg-brand-coffee text-brand-cream pt-20 pb-10">
+            < footer className="bg-brand-coffee text-brand-cream pt-20 pb-10" >
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="flex flex-col items-center text-center mb-16">
                         <h2 className="text-3xl md:text-5xl font-bold mb-6 max-w-2xl">¿Listo para sacarle toda la miga a tu negocio?</h2>
@@ -551,8 +673,8 @@ const LandingPage = ({ onLogin }) => {
                     </div>
                     <div className="border-t border-brand-cream/10 pt-10 flex flex-col md:flex-row justify-between items-center gap-6">
                         <div className="flex items-center gap-2 opacity-80">
-                            <span className="material-symbols-outlined text-brand-gold">bakery_dining</span>
-                            <span className="font-bold text-xl">MasaMi</span>
+                            <img src="/logo-miga.svg" alt="Miga Logo" className="w-6 h-6 object-contain" />
+                            <span className="font-bold text-xl">Miga</span>
                         </div>
                         <div className="flex gap-8 text-sm text-brand-cream/60">
                             <a href="#" className="hover:text-brand-gold transition-colors">Privacidad</a>
@@ -560,12 +682,12 @@ const LandingPage = ({ onLogin }) => {
                             <a href="#" className="hover:text-brand-gold transition-colors">Soporte</a>
                         </div>
                         <div className="text-sm text-brand-cream/40">
-                            © 2024 MasaMi Tech. Hecho con harina y código.
+                            © 2024 Miga Tech. Hecho con harina y código.
                         </div>
                     </div>
                 </div>
-            </footer>
-        </div>
+            </footer >
+        </div >
     );
 };
 
