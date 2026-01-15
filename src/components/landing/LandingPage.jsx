@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 
-const LandingPage = ({ onLogin }) => {
+const LandingPage = ({ onLogin, onGetStarted }) => {
     // Toggle for annual/monthly pricing
     const [isAnnual, setIsAnnual] = useState(false);
 
     // FAQ State
-    const [openFaq, setOpenFaq] = useState(null);
+    const [activeFaq, setActiveFaq] = useState(null);
 
     const toggleFaq = (index) => {
-        setOpenFaq(openFaq === index ? null : index);
+        setActiveFaq(activeFaq === index ? null : index);
     };
 
     return (
@@ -23,33 +23,38 @@ const LandingPage = ({ onLogin }) => {
                         </div>
                     </div>
                     <div className="hidden md:flex items-center gap-8">
-                        {['Características', 'Precios', 'Testimonios', 'FAQ'].map((item) => (
+                        {[
+                            { label: 'Características', id: 'features' },
+                            { label: 'Precios', id: 'pricing' },
+                            { label: 'Testimonios', id: 'testimonials' },
+                            { label: 'FAQ', id: 'faq' }
+                        ].map((item) => (
                             <a
-                                key={item}
-                                href={`#${item.toLowerCase().replace('á', 'a')}`}
+                                key={item.id}
+                                href={`#${item.id}`}
                                 className="text-sm font-medium text-brand-coffee/80 hover:text-brand-gold transition-colors"
                                 onClick={(e) => {
                                     e.preventDefault();
-                                    const element = document.getElementById(item.toLowerCase().replace('á', 'a'));
+                                    const element = document.getElementById(item.id);
                                     if (element) element.scrollIntoView({ behavior: 'smooth' });
                                 }}
                             >
-                                {item}
+                                {item.label}
                             </a>
                         ))}
                     </div>
                     <div className="flex items-center gap-4">
                         <button
                             onClick={onLogin}
-                            className="hidden sm:block text-sm font-semibold text-brand-coffee hover:text-brand-gold transition-colors"
+                            className="text-sm font-medium text-brand-coffee/80 hover:text-brand-gold transition-colors"
                         >
                             Iniciar Sesión
                         </button>
                         <button
-                            onClick={onLogin}
-                            className="bg-brand-gold hover:bg-yellow-600 text-brand-coffee font-bold py-2.5 px-6 rounded-full text-sm transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 transform"
+                            onClick={onGetStarted}
+                            className="bg-brand-gold text-brand-cream text-sm font-bold py-2.5 px-6 rounded-full hover:bg-brand-gold/90 transition-all shadow-lg shadow-brand-gold/20"
                         >
-                            Empieza Gratis
+                            Prueba Gratis
                         </button>
                     </div>
                 </div>
@@ -74,10 +79,10 @@ const LandingPage = ({ onLogin }) => {
                         </div>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                             <button
-                                onClick={onLogin}
+                                onClick={onGetStarted}
                                 className="bg-brand-gold hover:bg-yellow-600 text-brand-coffee text-base font-bold py-4 px-8 rounded-xl shadow-[0_0_20px_rgba(211,158,23,0.3)] transition-all hover:-translate-y-1"
                             >
-                                Empieza Gratis por 14 Días
+                                Prueba Gratis por 7 Días
                             </button>
                         </div>
                         <div className="flex flex-col gap-4 items-center lg:items-start">
@@ -555,7 +560,7 @@ const LandingPage = ({ onLogin }) => {
                         </div>
                         <div className="text-left">
                             <div className="font-bold text-lg text-brand-gold">Chelito de Montiel</div>
-                            <div className="text-sm text-brand-cream/60">Dueña de "La Artesana"</div>
+                            <div className="text-sm text-brand-cream/60">"Chelito de Montiel, Pan Artesanal Europeo"</div>
                         </div>
                     </div>
                 </div>
@@ -567,20 +572,6 @@ const LandingPage = ({ onLogin }) => {
                     <div className="text-center mb-12">
                         <h2 className="text-3xl md:text-4xl font-bold mb-4 text-brand-coffee">Planes diseñados para panaderos</h2>
                         <p className="text-brand-coffee/70 mb-8">Elige la herramienta que mejor se adapte al tamaño de tu horno.</p>
-
-                        {/* Toggle */}
-                        <div className="flex items-center justify-center gap-4 mb-8">
-                            <span className={`text-sm font-bold ${!isAnnual ? 'text-brand-coffee' : 'text-brand-coffee/60'}`}>Mensual</span>
-                            <button
-                                onClick={() => setIsAnnual(!isAnnual)}
-                                className="w-14 h-8 bg-brand-coffee rounded-full relative transition-colors focus:outline-none ring-1 ring-brand-coffee/10"
-                            >
-                                <div className={`absolute left-1 top-1 bg-brand-gold w-6 h-6 rounded-full transition-transform ${isAnnual ? 'translate-x-6' : ''}`}></div>
-                            </button>
-                            <span className={`text-sm font-bold ${isAnnual ? 'text-brand-coffee' : 'text-brand-coffee/60'}`}>
-                                Anual <span className="text-brand-gold text-xs ml-1">(Ahorra 2 meses)</span>
-                            </span>
-                        </div>
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
@@ -599,32 +590,33 @@ const LandingPage = ({ onLogin }) => {
                                     </li>
                                 ))}
                             </ul>
-                            <button onClick={onLogin} className="w-full py-3 px-4 rounded-lg border-2 border-brand-coffee/20 text-brand-coffee font-bold hover:bg-brand-coffee hover:text-white transition-colors">
-                                Elegir Emprendedor
+                            <button onClick={onGetStarted} className="w-full py-3 px-4 rounded-lg border-2 border-brand-coffee/20 text-brand-coffee font-bold hover:bg-brand-coffee hover:text-white transition-colors">
+                                Comenzar Prueba de 7 Días
                             </button>
                         </div>
 
                         {/* Card 2 (Highlighted) */}
                         <div className="bg-white p-8 rounded-2xl border-2 border-brand-gold relative shadow-xl shadow-brand-gold/10 transform md:-translate-y-4 flex flex-col">
                             <div className="absolute top-0 right-0 bg-brand-gold text-brand-coffee text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg">MÁS POPULAR</div>
-                            <h3 className="text-lg font-bold text-brand-gold uppercase tracking-widest mb-2">Maestro</h3>
-                            <div className="flex items-baseline gap-1 mb-6">
-                                <span className="text-4xl font-extrabold text-brand-coffee">{isAnnual ? '$749' : '$899'}</span>
-                                <span className="text-brand-coffee/60">/mes</span>
-                            </div>
-                            <p className="text-sm text-brand-coffee/70 mb-8">Para panaderías establecidas con equipo de producción.</p>
-                            <ul className="space-y-4 mb-8 flex-1">
-                                {['Recetas Ilimitadas', 'Planificador de Producción', 'Alertas de Inflación', '3 Usuarios + Contador'].map(feat => (
-                                    <li key={feat} className="flex items-center gap-3 text-sm text-brand-coffee">
-                                        <span className="material-symbols-outlined text-brand-gold text-lg">check</span> {feat}
+                            <h3 className="text-2xl font-bold mb-2 text-brand-coffee">Plan Panadero</h3>
+                            <div className="text-5xl font-extrabold mb-2 text-brand-gold">$29<span className="text-xl text-brand-coffee/40 font-medium">/mes</span></div>
+                            <p className="text-brand-coffee/60 mb-6">Perfecto para negocios en crecimiento</p>
+
+                            <ul className="space-y-4 mb-8 text-left">
+                                {['Recetas ilimitadas', 'Cálculo de costos automático', 'Gestión de inventario simple', 'Lista de compras inteligente', 'Soporte por WhatsApp'].map((feature, i) => (
+                                    <li key={i} className="flex items-center gap-3 text-brand-coffee/80">
+                                        <div className="w-5 h-5 rounded-full bg-brand-gold/20 flex items-center justify-center text-brand-gold">
+                                            <span className="material-symbols-outlined text-xs font-bold">check</span>
+                                        </div>
+                                        {feature}
                                     </li>
                                 ))}
                             </ul>
                             <button
-                                onClick={onLogin}
-                                className="w-full py-3 px-4 rounded-lg bg-brand-gold text-brand-coffee font-bold hover:bg-yellow-600 transition-colors shadow-lg shadow-brand-gold/20"
+                                onClick={onGetStarted}
+                                className="w-full bg-brand-gold text-brand-cream font-bold py-4 rounded-xl hover:bg-brand-gold/90 transition-all shadow-lg shadow-brand-gold/20 hover:-translate-y-1 block"
                             >
-                                Elegir Maestro
+                                Comenzar Prueba de 7 Días
                             </button>
                         </div>
                     </div>
@@ -644,9 +636,9 @@ const LandingPage = ({ onLogin }) => {
                             <div key={idx} className="group bg-brand-cream rounded-xl p-4 cursor-pointer border border-brand-coffee/5" onClick={() => toggleFaq(idx)}>
                                 <div className="flex items-center justify-between gap-1.5 text-brand-coffee font-bold">
                                     <h3 className="text-lg">{item.q}</h3>
-                                    <span className={`material-symbols-outlined transition-transform duration-300 ${openFaq === idx ? 'rotate-180' : ''}`}>expand_more</span>
+                                    <span className={`material-symbols-outlined transition-transform duration-300 ${activeFaq === idx ? 'rotate-180' : ''}`}>expand_more</span>
                                 </div>
-                                <div className={`grid transition-all duration-300 ease-in-out ${openFaq === idx ? 'grid-rows-[1fr] opacity-100 mt-4' : 'grid-rows-[0fr] opacity-0'}`}>
+                                <div className={`grid transition-all duration-300 ease-in-out ${activeFaq === idx ? 'grid-rows-[1fr] opacity-100 mt-4' : 'grid-rows-[0fr] opacity-0'}`}>
                                     <div className="overflow-hidden">
                                         <p className="leading-relaxed text-brand-coffee/70">{item.a}</p>
                                     </div>
@@ -661,13 +653,13 @@ const LandingPage = ({ onLogin }) => {
             < footer className="bg-brand-coffee text-brand-cream pt-20 pb-10" >
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="flex flex-col items-center text-center mb-16">
-                        <h2 className="text-3xl md:text-5xl font-bold mb-6 max-w-2xl">¿Listo para sacarle toda la miga a tu negocio?</h2>
+                        <h2 className="text-4xl md:text-5xl font-bold mb-6 text-brand-cream">¿Listo para sacarle toda la miga a tu negocio?</h2>
                         <div className="flex flex-col sm:flex-row gap-4 items-center">
                             <button
-                                onClick={onLogin}
+                                onClick={onGetStarted}
                                 className="bg-brand-gold hover:bg-yellow-600 text-brand-coffee text-lg font-bold py-3 px-10 rounded-xl transition-all shadow-glow hover:-translate-y-1"
                             >
-                                Prueba Gratis 14 Días
+                                Prueba Gratis 7 Días
                             </button>
                         </div>
                     </div>

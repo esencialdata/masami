@@ -343,11 +343,85 @@ export const api = {
         },
         update: async (id, upgrades) => {
             if (supabase) {
-                const { data, error } = await supabase.from('supplies').update(upgrades).eq('id', id).select();
+                // 1. Fetch current if price is changing to track history
+                let finalUpdates = { ...upgrades };
+
+                if (upgrades.current_cost !== undefined) {
+                    const { data: current, error: fetchError } = await supabase
+                        .from('supplies')
+                        .select('current_cost, history')
+                        .eq('id', id)
+                        .single();
+
+                    if (!fetchError && current) {
+                        // Only update history if price actually changed
+                        if (Number(current.current_cost) !== Number(upgrades.current_cost)) {
+                            const newHistoryItem = {
+                                price: Number(upgrades.current_cost),
+                                date: new Date().toISOString()
+                            };
+                            let currentHistory = Array.isArray(current.history) ? current.history : [];
+
+                            // BACKFILL FIX: If history is empty, save the OLD price as a historical point
+                            if (currentHistory.length === 0 && current.current_cost) {
+                                currentHistory = [{
+                                    price: Number(current.current_cost),
+                                    date: new Date(Date.now() - 1000).toISOString()
+                                }];
+                            }
+
+                            // Add to history
+                            finalUpdates.history = [newHistoryItem, ...currentHistory];
+                        }
+                    }
+                }
+
+                const { data, error } = await supabase.from('supplies').update(finalUpdates).eq('id', id).select();
                 if (error) throw error;
                 return data[0];
             }
+
+            // Local Storage Fallback
+            const current = getLocal('bakery_supplies');
+            const index = current.findIndex(s => s.id === id);
+            if (index !== -1) {
+                const oldSupply = current[index];
+                let updated = { ...oldSupply, ...upgrades };
+
+                // Track history locally
+                if (upgrades.current_cost !== undefined && Number(oldSupply.current_cost) !== Number(upgrades.current_cost)) {
+                    const newHistoryItem = {
+                        price: Number(upgrades.current_cost),
+                        date: new Date().toISOString()
+                    };
+                    let history = Array.isArray(oldSupply.history) ? oldSupply.history : [];
+
+                    // BACKFILL FIX LOCAL
+                    if (history.length === 0 && oldSupply.current_cost) {
+                        history = [{
+                            price: Number(oldSupply.current_cost),
+                            date: new Date(Date.now() - 1000).toISOString()
+                        }];
+                    }
+
+                    updated.history = [newHistoryItem, ...history];
+                }
+
+                current[index] = updated;
+                setLocal('bakery_supplies', current);
+                return updated;
+            }
             return null;
+        },
+        delete: async (id) => {
+            if (supabase) {
+                const { error } = await supabase.from('supplies').delete().eq('id', id);
+                if (error) throw error;
+                return true;
+            }
+            const current = getLocal('bakery_supplies');
+            setLocal('bakery_supplies', current.filter(s => s.id !== id));
+            return true;
         }
     },
     recipes: {
@@ -463,11 +537,44 @@ export const api = {
         },
         create: async (item) => {
             if (supabase) {
+                // Check for duplicates first (Upsert logic)
+                const { data: existing } = await supabase
+                    .from('packaging_inventory')
+                    .select('id, current_quantity')
+                    .eq('type', item.type)
+                    .maybeSingle();
+
+                if (existing) {
+                    const newQty = Number(existing.current_quantity) + Number(item.current_quantity);
+                    const { data, error } = await supabase
+                        .from('packaging_inventory')
+                        .update({ current_quantity: newQty })
+                        .eq('id', existing.id)
+                        .select();
+                    if (error) throw error;
+                    return data[0];
+                }
+
                 const { data, error } = await supabase.from('packaging_inventory').insert(item).select();
                 if (error) throw error;
                 return data[0];
             }
             const current = getLocal(STORAGE_KEYS.PACKAGING);
+
+            // Local Duplicate Check
+            const existingIndex = current.findIndex(i => i.type === item.type);
+            if (existingIndex !== -1) {
+                const existing = current[existingIndex];
+                const updated = {
+                    ...existing,
+                    current_quantity: Number(existing.current_quantity) + Number(item.current_quantity),
+                    updated_at: new Date().toISOString()
+                };
+                current[existingIndex] = updated;
+                setLocal(STORAGE_KEYS.PACKAGING, current);
+                return updated;
+            }
+
             // new item
             const newItem = { ...item, id: crypto.randomUUID(), updated_at: new Date().toISOString() };
             setLocal(STORAGE_KEYS.PACKAGING, [...current, newItem]);
@@ -488,6 +595,16 @@ export const api = {
                 return updated;
             }
             return null;
+        },
+        delete: async (id) => {
+            if (supabase) {
+                const { error } = await supabase.from('packaging_inventory').delete().eq('id', id);
+                if (error) throw error;
+                return true;
+            }
+            const current = getLocal(STORAGE_KEYS.PACKAGING);
+            setLocal(STORAGE_KEYS.PACKAGING, current.filter(i => i.id !== id));
+            return true;
         }
     },
     orders: {
