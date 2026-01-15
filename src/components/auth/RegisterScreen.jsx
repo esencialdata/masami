@@ -62,6 +62,7 @@ export default function RegisterScreen({ onLogin }) {
                 email: formData.email,
                 password: formData.password,
                 options: {
+                    emailRedirectTo: window.location.origin, // Force redirect to current domain (Vercel)
                     data: {
                         full_name: formData.name,
                         business_name: inviteParams ? null : formData.businessName, // Sent only if creating new tenant
