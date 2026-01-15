@@ -27,7 +27,11 @@ export default function LoginScreen({ onLogin, onBack, onRegister }) {
 
         } catch (err) {
             console.error('Login error:', err);
-            setError('Credenciales incorrectas o usuario no encontrado.');
+            // Show specific error for debugging (translate common ones)
+            let msg = 'Credenciales incorrectas o usuario no encontrado.';
+            if (err.message.includes('Email not confirmed')) msg = 'Por favor confirma tu correo electrónico.';
+            if (err.message.includes('Invalid login credentials')) msg = 'Correo o contraseña incorrectos.';
+            setError(msg);
         } finally {
             setLoading(false);
         }
