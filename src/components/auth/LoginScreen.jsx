@@ -54,9 +54,31 @@ export default function LoginScreen({ onLogin, onBack, onRegister }) {
                 <p className="text-brand-coffee/60 mb-8 text-sm">Gestiona tu negocio de forma inteligente</p>
 
                 {error && (
-                    <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100 flex items-center justify-center gap-2 animate-pulse">
-                        <span className="material-symbols-outlined text-lg">error</span>
-                        {error}
+                    <div className="mb-4 flex flex-col gap-2">
+                        <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100 flex items-center justify-center gap-2 animate-pulse">
+                            <span className="material-symbols-outlined text-lg">error</span>
+                            {error}
+                        </div>
+
+                        {error.includes('confirma tu correo') && (
+                            <button
+                                type="button"
+                                onClick={async () => {
+                                    setLoading(true);
+                                    const { error: resendError } = await supabase.auth.resend({
+                                        type: 'signup',
+                                        email: email,
+                                        options: { emailRedirectTo: window.location.origin }
+                                    });
+                                    setLoading(false);
+                                    if (resendError) setError(resendError.message);
+                                    else setError('¡Correo reenviado! Revisa tu bandeja.');
+                                }}
+                                className="text-xs font-bold text-brand-gold hover:underline"
+                            >
+                                Reenviar correo de confirmación
+                            </button>
+                        )}
                     </div>
                 )}
 
