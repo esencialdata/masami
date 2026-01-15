@@ -87,7 +87,8 @@ export default function RegisterScreen({ onLogin }) {
                     // FLOW B: CREATING NEW TENANT (Default)
                     // 2. Create Tenant & Link Owner (via RPC)
                     const { data: tenantId, error: rpcError } = await supabase.rpc('create_tenant_and_owner', {
-                        tenant_name: formData.businessName
+                        tenant_name: formData.businessName,
+                        owner_id: user.id
                     });
 
                     if (rpcError) throw rpcError;
