@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Layout from './components/layout/Layout';
 import Dashboard from './components/dashboard/Dashboard';
+import { useAuth } from './context/AuthContext';
 
 import ClientList from './components/clients/ClientList';
 import OrdersView from './components/orders/OrdersView';
@@ -12,40 +13,43 @@ import ReportsView from './components/reports/ReportsView';
 import LandingPage from './components/landing/LandingPage';
 import LoginScreen from './components/auth/LoginScreen';
 import RegisterScreen from './components/auth/RegisterScreen';
-
+import SubscriptionGuard from './components/auth/SubscriptionGuard';
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return localStorage.getItem('cdm_auth_token') === 'chelitoysantiago';
-  });
+  const { user, loading, signOut } = useAuth();
 
+  // Local state for UI flow only (not auth state)
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
 
   const [activeTab, setActiveTab] = useState('dashboard');
   const [lastUpdated, setLastUpdated] = useState(() => Date.now());
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    localStorage.setItem('cdm_auth_token', 'chelitoysantiago'); // Keep original auth token logic for now
-    setIsAuthenticated(true);
-    setShowLogin(false);
-    setShowRegister(false);
-  };
-
-  const handleRegister = (formData) => {
-    // Here logic to create account
-    localStorage.setItem('cdm_auth_token', 'chelitoysantiago'); // Assume successful registration logs in
-    setIsAuthenticated(true);
-    setShowLogin(false);
-    setShowRegister(false);
-  }
-
   const handleTransactionAdded = () => {
     setLastUpdated(Date.now());
   };
 
-  if (!isAuthenticated && !showLogin && !showRegister) {
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center bg-brand-cream text-brand-coffee">Cargando Miga...</div>;
+  }
+
+  if (!user) {
+    if (showRegister) {
+      return (
+        <RegisterScreen
+          onLogin={() => { setShowRegister(false); setShowLogin(true); }}
+        />
+      );
+    }
+    if (showLogin) {
+      return (
+        <LoginScreen
+          onBack={() => setShowLogin(false)}
+          onRegister={() => { setShowLogin(false); setShowRegister(true); }}
+        />
+      );
+    }
+    // Landing Page
     return (
       <LandingPage
         onGetStarted={() => setShowRegister(true)}
@@ -54,47 +58,18 @@ function App() {
     );
   }
 
-  if (showLogin) {
-    return <LoginScreen onLogin={handleLogin} onBack={() => setShowLogin(false)} onRegister={() => { setShowLogin(false); setShowRegister(true); }} />;
-  }
-
-  if (showRegister) {
-    return (
-      <RegisterScreen
-        onLogin={() => { setShowRegister(false); setShowLogin(true); }}
-        onRegister={handleRegister}
-      />
-    );
-  }
-
-  const handleLogout = () => {
-    localStorage.removeItem('cdm_auth_token');
-    setIsAuthenticated(false);
-    setShowLogin(false);
-    setShowRegister(false); // Ensure register screen is also hidden on logout
-  };
-
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'dashboard': return <Dashboard refreshTrigger={lastUpdated} />;
-      case 'orders': return <OrdersView />;
-      case 'clients': return <ClientList />;
-      case 'products': return <ProductList />;
-      case 'settings': return <Settings />;
-      case 'reports': return <ReportsView />;
-      default: return <Dashboard refreshTrigger={lastUpdated} />;
-    }
-  };
-
+  // Authenticated App
   return (
-    <Layout
-      activeTab={activeTab}
-      setActiveTab={setActiveTab}
-      onTransactionAdded={handleTransactionAdded}
-      onLogout={handleLogout}
-    >
-      {renderContent()}
-    </Layout>
+    <SubscriptionGuard>
+      <Layout activeTab={activeTab} setActiveTab={setActiveTab} onLogout={signOut}>
+        {activeTab === 'dashboard' && <Dashboard key={lastUpdated} refreshTrigger={lastUpdated} />}
+        {activeTab === 'pedidos' && <OrdersView />}
+        {activeTab === 'clientes' && <ClientList />}
+        {activeTab === 'inventario' && <ProductList />}
+        {activeTab === 'reportes' && <ReportsView />}
+        {activeTab === 'configuracion' && <Settings />}
+      </Layout>
+    </SubscriptionGuard>
   );
 }
 
