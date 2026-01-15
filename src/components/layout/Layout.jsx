@@ -15,7 +15,7 @@ const Layout = ({ children, activeTab, setActiveTab, onTransactionAdded, onLogou
         // Actually Baker can see Dashboard if we strip financial widgets, but prompt says "Ocultar Finanzas".
         { id: 'pedidos', label: 'Pedidos', icon: Calendar, roles: ['owner', 'baker', 'sales'] },
         { id: 'clientes', label: 'Clientes', icon: Users, roles: ['owner', 'sales'] },
-        { id: 'inventario', label: 'Inventario', icon: FolderIconOrPackage, roles: ['owner', 'baker'] },
+        { id: 'inventario', label: 'Inventario', icon: Package, roles: ['owner', 'baker'] },
         // Note: Inventario here implies Products/Recipes. Sales should NOT see this.
         { id: 'reportes', label: 'Reportes', icon: BarChart3, roles: ['owner'] },
         { id: 'configuracion', label: 'Configuración', icon: Settings, roles: ['owner'] },
