@@ -352,7 +352,7 @@ const LandingPage = ({ onLogin, onGetStarted }) => {
                                 <div className="bg-white rounded-2xl shadow-sm border border-brand-coffee/5 overflow-hidden">
                                     <div className="p-4 border-b border-brand-coffee/5 flex justify-between items-center bg-brand-gold/5">
                                         <div className="font-bold text-brand-coffee">Rosca de Reyes Tradicional</div>
-                                        <div className="text-sm font-bold text-green-600 bg-green-100 px-2 py-1 rounded">Costo: $45.50</div>
+                                        <div className="text-sm font-bold text-green-600 bg-green-100 px-2 py-1 rounded">Costo: $43.00</div>
                                     </div>
                                     <div className="p-4 space-y-3">
                                         <div className="flex justify-between items-center text-sm">
@@ -377,8 +377,8 @@ const LandingPage = ({ onLogin, onGetStarted }) => {
                                             <span className="font-mono text-brand-coffee/60">$6.30</span>
                                         </div>
                                         <div className="pt-2 mt-2 border-t border-dashed border-brand-coffee/10 flex justify-between items-center">
-                                            <span className="text-xs font-bold text-brand-coffee/50 uppercase tracking-widest">Margen Sugerido (35%)</span>
-                                            <span className="font-bold text-brand-coffee">$130.00</span>
+                                            <span className="text-xs font-bold text-brand-coffee/50 uppercase tracking-widest">Precio Sugerido (3x)</span>
+                                            <span className="font-bold text-brand-coffee">$129.00</span>
                                         </div>
                                     </div>
                                 </div>
@@ -564,10 +564,10 @@ const LandingPage = ({ onLogin, onGetStarted }) => {
                         </div>
                     </div>
                 </div>
-            </section >
+            </section>
 
             {/* Pricing Section */}
-            < section className="py-24 bg-brand-cream relative" id="pricing" >
+            <section className="py-24 bg-brand-cream relative" id="pricing">
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="text-center mb-12">
                         <h2 className="text-3xl md:text-4xl font-bold mb-4 text-brand-coffee">Planes diseñados para panaderos</h2>
@@ -599,7 +599,7 @@ const LandingPage = ({ onLogin, onGetStarted }) => {
                         <div className="bg-white p-8 rounded-2xl border-2 border-brand-gold relative shadow-xl shadow-brand-gold/10 transform md:-translate-y-4 flex flex-col">
                             <div className="absolute top-0 right-0 bg-brand-gold text-brand-coffee text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg">MÁS POPULAR</div>
                             <h3 className="text-2xl font-bold mb-2 text-brand-coffee">Plan Panadero</h3>
-                            <div className="text-5xl font-extrabold mb-2 text-brand-gold">$29<span className="text-xl text-brand-coffee/40 font-medium">/mes</span></div>
+                            <div className="text-5xl font-extrabold mb-2 text-brand-gold">{isAnnual ? '$749' : '$899'}<span className="text-xl text-brand-coffee/40 font-medium">/mes</span></div>
                             <p className="text-brand-coffee/60 mb-6">Perfecto para negocios en crecimiento</p>
 
                             <ul className="space-y-4 mb-8 text-left">
@@ -621,10 +621,10 @@ const LandingPage = ({ onLogin, onGetStarted }) => {
                         </div>
                     </div>
                 </div>
-            </section >
+            </section>
 
             {/* FAQ Section */}
-            < section className="py-20 bg-white" id="faq" >
+            <section className="py-20 bg-white" id="faq">
                 <div className="max-w-3xl mx-auto px-6">
                     <h2 className="text-3xl font-bold text-center mb-12 text-brand-coffee">Preguntas Frecuentes</h2>
                     <div className="space-y-4">
@@ -647,7 +647,7 @@ const LandingPage = ({ onLogin, onGetStarted }) => {
                         ))}
                     </div>
                 </div>
-            </section >
+            </section>
 
             {/* Footer */}
             < footer className="bg-brand-coffee text-brand-cream pt-20 pb-10" >
