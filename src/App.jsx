@@ -29,10 +29,17 @@ function App() {
     setLastUpdated(Date.now());
   };
 
+  // Failsafe: User Authenticated but No Profile (Trigger failed)
+  const [setupError, setSetupError] = useState(null);
+  const [isSettingUp, setIsSettingUp] = useState(false);
+  const { refreshProfile, profile } = useAuth(); // Destructure profile from context
+
+  // 1. Initial Loading State
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center bg-brand-cream text-brand-coffee">Cargando Miga...</div>;
+    return <div className="min-h-screen flex items-center justify-center bg-brand-cream text-brand-coffee animate-pulse">Cargando Miga...</div>;
   }
 
+  // 2. Unauthenticated State
   if (!user) {
     if (showRegister) {
       return (
@@ -55,6 +62,61 @@ function App() {
         onGetStarted={() => setShowRegister(true)}
         onLogin={() => setShowLogin(true)}
       />
+    );
+  }
+
+  // 3. Authenticated but Incomplete Setup (Zombie User)
+  if (user && !profile) {
+    const handleForceSetup = async () => {
+      try {
+        setIsSettingUp(true);
+        setSetupError(null);
+
+        // Derive Business Name from Metadata or Default
+        const businessName = user.user_metadata?.business_name || 'Mi Panadería';
+
+        const { data, error } = await import('./services/api').then(m => m.supabase.rpc('create_tenant_and_owner', {
+          tenant_name: businessName,
+          owner_id: user.id
+        }));
+
+        if (error) throw error;
+
+        // refresh
+        await refreshProfile();
+        // Force reload if context doesn't update fast enough
+        window.location.reload();
+
+      } catch (err) {
+        console.error("Setup failed:", err);
+        setSetupError(err.message || 'Error al configurar cuenta.');
+      } finally {
+        setIsSettingUp(false);
+      }
+    };
+
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-brand-cream p-4 text-center">
+        <div className="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full border border-brand-coffee/10">
+          <img src="/app_icon.svg" className="w-20 h-20 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-brand-coffee mb-2">Finalizando Configuración</h2>
+          <p className="text-brand-coffee/60 mb-6">Tu cuenta fue creada, pero estamos preparando tu espacio de trabajo.</p>
+
+          {setupError && (
+            <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm">
+              {setupError}
+            </div>
+          )}
+
+          <button
+            onClick={handleForceSetup}
+            disabled={isSettingUp}
+            className="w-full bg-brand-gold text-white font-bold py-3 rounded-xl hover:bg-brand-gold/90 transition-all flex justify-center items-center gap-2"
+          >
+            {isSettingUp ? 'Configurando...' : 'Completar Instalación'}
+          </button>
+        </div>
+      </div>
     );
   }
 
