@@ -94,6 +94,32 @@ export const AuthProvider = ({ children }) => {
         return () => subscription.unsubscribe();
     }, []);
 
+    // 3. Auto-Recover Session on Focus (Fix for infinite loading on resume)
+    useEffect(() => {
+        const handleFocus = () => {
+            console.log('👀 Window Focused - Refreshing Session...');
+            supabase.auth.getSession().then(({ data: { session }, error }) => {
+                if (error) console.error('Error refreshing session on focus:', error);
+                if (session?.user) {
+                    // If we have a session, ensure we have the token
+                    console.log('✅ Session active on focus');
+                } else {
+                    console.log('⚠️ No session on focus - possibly expired?');
+                }
+            });
+        };
+
+        window.addEventListener('focus', handleFocus);
+        window.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') handleFocus();
+        });
+
+        return () => {
+            window.removeEventListener('focus', handleFocus);
+            // removing visibilitychange with anonymous function is tricky, but this is a singleton effectively
+        };
+    }, []);
+
     const fetchProfileAndTenant = async (userId) => {
         // Safety Timeout to prevent infinite loading
         const timeoutId = setTimeout(() => {
