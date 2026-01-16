@@ -9,8 +9,9 @@ const TransactionList = ({ limit = 5, refreshTrigger }) => {
 
     const loadTransactions = async () => {
         try {
-            const data = await api.transactions.list();
-            setTransactions(limit ? data.slice(0, limit) : data);
+            // Optim: Only fetch the 'limit' amount from DB, not everything
+            const data = await api.transactions.list({ limit: limit });
+            setTransactions(data);
         } catch (e) {
             console.error(e);
         } finally {

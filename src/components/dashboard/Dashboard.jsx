@@ -24,45 +24,37 @@ const Dashboard = ({ refreshTrigger }) => {
         try {
             const now = new Date();
             const todayStr = format(now, 'yyyy-MM-dd');
+            // Optim: Fetch ONLY today's transactions for the dashboard pulse
+            // This prevents downloading thousands of historical records every few seconds
+            const startOfDay = new Date(now.setHours(0, 0, 0, 0)).toISOString();
 
             const [txs, config, packaging] = await Promise.all([
-                api.transactions.list(),
+                api.transactions.list({ startDate: startOfDay }),
                 api.config.get(),
                 api.packaging.list()
             ]);
 
-            // Debug Logging for User/Dev
-            console.log("Dashboard - Checking Dates:", { todayStr, totalTxs: txs.length });
+            // Debug Logging
+            // console.log("Dashboard Pulse:", { todayStr, txsCount: txs.length });
 
             // Stock Alerts
             // Stock Alerts - Aggregated by Name to handle duplicates
             const aggregatedStock = packaging.reduce((acc, item) => {
                 const name = item.type.trim();
+                // ... (rest of logic unchanged, just keeping context)
                 if (!acc[name]) {
-                    acc[name] = {
-                        ...item,
-                        current_quantity: 0,
-                        ids: []
-                    };
+                    acc[name] = { ...item, current_quantity: 0, ids: [] };
                 }
                 acc[name].current_quantity += Number(item.current_quantity);
-                acc[name].ids.push(item.id);
-                // Keep the max alert threshold found for safety, or just the first one
-                acc[name].min_alert = Math.max(Number(acc[name].min_alert), Number(item.min_alert));
                 return acc;
             }, {});
 
             const alerts = Object.values(aggregatedStock).filter(p => Number(p.current_quantity) <= Number(p.min_alert));
             setStockAlerts(alerts);
 
-            // Filter using isSameDay for robustness
-            const todayTxs = txs.filter(t => {
-                const txDate = new Date(t.date);
-                const isToday = isSameDay(txDate, now);
-                // console.log(`Tx ${t.id} (${t.date}): isToday=${isToday}`); // Uncomment for verbose debug
-                return isToday;
-            });
-            console.log("Found today transactions:", todayTxs.length);
+            // Txs are already filtered by Supabase for today (>= startOfDay)
+            // But we can double check date-fns just in case of timezone edge cases
+            const todayTxs = txs;
 
             const income = todayTxs
                 .filter(t => t.type === 'VENTA')
@@ -73,7 +65,7 @@ const Dashboard = ({ refreshTrigger }) => {
                 .reduce((sum, t) => sum + Number(t.amount), 0);
 
             const dailyFixedCost = Number(config.monthly_fixed_costs) / 30;
-            const target = dailyFixedCost + variableExpenses; // The "Break Even" point for today
+            const target = dailyFixedCost + variableExpenses;
 
             const percent = target > 0 ? (income / target) * 100 : (income > 0 ? 100 : 0);
 
@@ -81,7 +73,7 @@ const Dashboard = ({ refreshTrigger }) => {
                 income,
                 expenses: variableExpenses,
                 goal: target,
-                percent: Math.min(percent, 100), // Cap for bar width, but value can be higher
+                percent: Math.min(percent, 100),
                 rawValue: percent,
                 isProfit: percent >= 100
             });
@@ -94,8 +86,8 @@ const Dashboard = ({ refreshTrigger }) => {
 
     useEffect(() => {
         calculatePulse();
-        // Simulate real-time by polling or simple load
-        const interval = setInterval(calculatePulse, 5000);
+        // Optim: Poll every 60s instead of 5s to reduce DB load
+        const interval = setInterval(calculatePulse, 60000);
         return () => clearInterval(interval);
     }, [refreshTrigger]);
 

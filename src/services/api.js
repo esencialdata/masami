@@ -75,13 +75,25 @@ if (!supabase) {
 
 export const api = {
     transactions: {
-        list: async () => {
+        list: async (options = {}) => {
             if (supabase) {
-                const { data, error } = await supabase.from('transactions').select('*').order('date', { ascending: false });
+                let query = supabase.from('transactions').select('*').order('date', { ascending: false });
+
+                if (options.limit) query = query.limit(options.limit);
+                if (options.startDate) query = query.gte('date', options.startDate);
+                if (options.endDate) query = query.lte('date', options.endDate);
+
+                const { data, error } = await query;
                 if (error) throw error;
                 return data;
             }
-            return getLocal(STORAGE_KEYS.TRANSACTIONS).sort((a, b) => new Date(b.date) - new Date(a.date));
+            // Local fallback
+            let data = getLocal(STORAGE_KEYS.TRANSACTIONS);
+            if (options.startDate) data = data.filter(t => new Date(t.date) >= new Date(options.startDate));
+            if (options.endDate) data = data.filter(t => new Date(t.date) <= new Date(options.endDate));
+            data.sort((a, b) => new Date(b.date) - new Date(a.date));
+            if (options.limit) data = data.slice(0, options.limit);
+            return data;
         },
         create: async (transaction) => {
             if (supabase) {
