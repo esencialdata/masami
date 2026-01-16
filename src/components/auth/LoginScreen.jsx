@@ -26,9 +26,6 @@ export default function LoginScreen({ onLogin, onBack, onRegister }) {
             // Success handler
             if (onLogin) {
                 onLogin();
-            } else {
-                // Fallback: If App doesn't unmount us, force reload to pick up session
-                window.location.reload();
             }
 
         } catch (err) {

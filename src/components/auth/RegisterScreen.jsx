@@ -26,6 +26,7 @@ const DEFAULT_INGREDIENTS = [
 
 export default function RegisterScreen({ onLogin }) {
     const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState(false);
     const [error, setError] = useState(null);
     const [inviteParams, setInviteParams] = useState(null);
     const [formData, setFormData] = useState({
@@ -75,14 +76,7 @@ export default function RegisterScreen({ onLogin }) {
             if (signUpError) throw signUpError;
 
             if (user) {
-                // Success! 
-                // Initial session might be shaky until trigger completes, but usually works fine.
-                // We reload to force app re-init with correct context (profile usually created by now)
-
-                // Optional: Short delay or check if profile exists, but reload is safest for full context
-                setTimeout(() => {
-                    window.location.href = '/';
-                }, 1000);
+                setSuccess(true);
             }
         } catch (err) {
             console.error(err);
@@ -91,6 +85,36 @@ export default function RegisterScreen({ onLogin }) {
             setLoading(false);
         }
     };
+
+    if (success) {
+        return (
+            <div className="min-h-screen bg-background-light flex items-center justify-center p-4 font-display">
+                <div className="bg-surface-light p-8 rounded-3xl shadow-xl w-full max-w-md border border-brand-coffee/10 text-center">
+                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <span className="material-symbols-outlined text-3xl text-green-600">mark_email_read</span>
+                    </div>
+                    <h1 className="text-2xl font-bold text-brand-coffee mb-2">¡Confirma tu correo!</h1>
+                    <p className="text-brand-coffee/60 mb-6 text-sm">
+                        Hemos enviado un enlace de confirmación a <span className="font-bold text-brand-coffee">{formData.email}</span>.
+                    </p>
+                    <div className="bg-brand-cream/50 p-4 rounded-xl text-sm text-brand-coffee/80 mb-8 text-left">
+                        <p className="font-bold mb-1">Pasos a seguir:</p>
+                        <ol className="list-decimal pl-5 space-y-1">
+                            <li>Revisa tu bandeja de entrada.</li>
+                            <li>Busca el correo de "Miga" (revisa Spam por si acaso).</li>
+                            <li>Haz clic en el enlace para activar tu cuenta.</li>
+                        </ol>
+                    </div>
+                    <button
+                        onClick={onLogin}
+                        className="w-full bg-brand-gold text-white font-bold py-3.5 rounded-xl hover:bg-brand-gold/90 transition-all shadow-lg shadow-brand-gold/20"
+                    >
+                        Volver al Inicio de Sesión
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-background-light flex items-center justify-center p-4 font-display">

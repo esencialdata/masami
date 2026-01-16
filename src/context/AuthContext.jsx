@@ -15,10 +15,15 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         // 1. Check active session
-        const isRedirect = window.location.hash && (
-            window.location.hash.includes('access_token') ||
-            window.location.hash.includes('error') ||
-            window.location.hash.includes('type=recovery')
+        // Only set loading false if NO hash is present (handling redirect/recovery)
+        // We broaden the check to catch 'signup', 'invite', 'recovery', and standard tokens
+        const hash = window.location.hash;
+        const isRedirect = hash && (
+            hash.includes('access_token') ||
+            hash.includes('error') ||
+            hash.includes('type=recovery') ||
+            hash.includes('type=signup') ||
+            hash.includes('type=invite')
         );
 
         if (isRedirect) {
