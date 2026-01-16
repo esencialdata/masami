@@ -60,7 +60,7 @@ const Layout = ({ children, activeTab, setActiveTab, onTransactionAdded, onLogou
             {/* Sidebar Desktop */}
             <aside className="hidden md:flex w-64 flex-col bg-white border-r border-gray-100 h-screen fixed left-0 top-0 z-50">
                 <div className="p-6 flex items-center gap-3">
-                    <img src="/logo_chelito.svg" alt="Miga" className="h-16 w-auto" />
+                    <img src="/logo-miga.svg" alt="Miga" className="h-16 w-auto" />
                 </div>
 
                 <nav className="flex-1 px-4 space-y-2 overflow-y-auto">
