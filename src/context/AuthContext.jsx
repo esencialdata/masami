@@ -138,7 +138,15 @@ const value = {
     isRecoveryFlow,
     authError,
     signOut,
-    refreshProfile: () => user && fetchProfileAndTenant(user.id)
+    refreshProfile: () => user && fetchProfileAndTenant(user.id),
+    loginManual: async (session) => {
+        console.log('⚡ Manual Login Triggered');
+        setSession(session);
+        setUser(session?.user ?? null);
+        if (session?.user) {
+            await fetchProfileAndTenant(session.user.id);
+        }
+    }
 };
 
 return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

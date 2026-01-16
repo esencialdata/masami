@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { supabase } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
 export default function LoginScreen({ onLogin, onBack, onRegister }) {
+    const { loginManual } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -36,8 +38,11 @@ export default function LoginScreen({ onLogin, onBack, onRegister }) {
 
             if (onLogin) onLogin();
 
-            // Let AuthContext handle the state update via onAuthStateChange
-            // If it doesn't trigger automatically, calling onLogin is a fallback (but currently empty in App.jsx)
+            // Manual Hydration (Fix for race condition/missing listener event)
+            if (data.session) {
+                await loginManual(data.session);
+            }
+
             if (onLogin) onLogin();
 
         } catch (err) {
