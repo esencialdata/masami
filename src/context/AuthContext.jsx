@@ -17,14 +17,17 @@ export const AuthProvider = ({ children }) => {
         // 1. Check active session
         // Only set loading false if NO hash is present (handling redirect/recovery)
         // We broaden the check to catch 'signup', 'invite', 'recovery', and standard tokens
+        // AND PKCE 'code' in search params
         const hash = window.location.hash;
-        const isRedirect = hash && (
+        const search = window.location.search;
+
+        const isRedirect = (hash && (
             hash.includes('access_token') ||
             hash.includes('error') ||
             hash.includes('type=recovery') ||
             hash.includes('type=signup') ||
             hash.includes('type=invite')
-        );
+        )) || (search && search.includes('code='));
 
         if (isRedirect) {
             console.log('Auth redirect detected, waiting for event...');
