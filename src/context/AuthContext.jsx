@@ -6,75 +6,52 @@ const AuthContext = createContext({});
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-    // PHOENIX PROTOCOL: Trust local storage BLINDLY for UI access.
+    // PHOENIX PROTOCOL: Simpler Version (Matched to Chelito Logic)
+    // We trust localStorage 'miga_is_authenticated' for UI access.
+    // We let Supabase do its thing in the background without forcing refreshes on focus.
 
-    // 0. Auto-Repair: Check for legacy Supabase sessions
-    // If we find a key starting with 'sb-' and ending with '-token', we assume we are logged in.
-    let hasLegacySession = false;
-    if (typeof localStorage !== 'undefined') {
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key && key.startsWith('sb-') && key.endsWith('-auth-token')) {
-                hasLegacySession = true;
-                // Auto-fix ONLY if not explicitly set to false (unlikely case)
-                if (!localStorage.getItem('miga_is_authenticated')) {
-                    console.log('🔧 Auto-Repair: Found legacy session, upgrading to Phoenix Protocol');
-                    localStorage.setItem('miga_is_authenticated', 'true');
-                }
-                break;
-            }
-        }
-    }
-
-    // 1. Synchronous Access Check
-    const localAuth = localStorage.getItem('miga_is_authenticated') === 'true';
+    const localAuth = typeof localStorage !== 'undefined' && localStorage.getItem('miga_is_authenticated') === 'true';
 
     const [isAuthenticated, setIsAuthenticated] = useState(localAuth);
-    const [loading, setLoading] = useState(!localAuth); // Only load if we are NOT authenticated
+    const [loading, setLoading] = useState(!localAuth);
 
     const [user, setUser] = useState(null);
     const [session, setSession] = useState(null);
     const [profile, setProfile] = useState(null);
     const [tenant, setTenant] = useState(null);
-    const [authError, setAuthError] = useState(null);
     const [isRecoveryFlow, setIsRecoveryFlow] = useState(false);
 
     useEffect(() => {
-        // 2. Background Connection (Fire & Forget)
-        // If we think we are authenticated, show the app IMMEDIATELY (loading=false)
-        if (localAuth) {
-            setLoading(false);
-        }
-
+        // 1. Initial Load: Just check session once. No complex intervals or focus listeners.
         const initAuth = async () => {
-            const { data: { session }, error } = await supabase.auth.getSession();
-            if (session) {
-                console.log('☁️ Supabase Connected (Background)');
-                setSession(session);
-                setUser(session.user);
+            if (localAuth) {
+                setLoading(false); // Show UI immediately
+            }
+
+            const { data: { session: currentSession } } = await supabase.auth.getSession();
+
+            if (currentSession) {
+                console.log('☁️ Supabase Connected');
+                setSession(currentSession);
+                setUser(currentSession.user);
                 setIsAuthenticated(true);
                 localStorage.setItem('miga_is_authenticated', 'true');
-
-                // Fetch Profile (Non-blocking)
-                fetchProfileAndTenant(session.user.id);
+                fetchProfileAndTenant(currentSession.user.id);
             } else {
-                console.log('☁️ No Supabase Session - might be expired or fresh load');
-                if (localAuth) {
-                    // We thought we were logged in, but Supabase says no.
-                    // IMPORTANT: Do NOT kick user out immediately if offline.
-                    // Only kick out if we receive an explicit "Invalid Refresh Token" error or similar.
-                    // For now, let them see cached data.
-                } else {
-                    setLoading(false); // Stop loading to show Login Screen
+                console.log('☁️ No active session');
+                if (!localAuth) {
+                    setLoading(false); // Only stop loading if we weren't already showing UI
                 }
+                // If localAuth is true (Phoenix), we STAY authenticated safely backed by cache
             }
         };
 
         initAuth();
 
+        // 2. Passive Subscription (Standard Supabase)
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             console.log('📢 Auth Change:', event);
-            if (event === 'SIGNED_IN') {
+            if (event === 'SIGNED_IN' && session) {
                 setIsAuthenticated(true);
                 localStorage.setItem('miga_is_authenticated', 'true');
                 setSession(session);
@@ -85,6 +62,8 @@ export const AuthProvider = ({ children }) => {
                 localStorage.removeItem('miga_is_authenticated');
                 setSession(null);
                 setUser(null);
+                setProfile(null);
+                setTenant(null);
             } else if (event === 'PASSWORD_RECOVERY') {
                 setIsRecoveryFlow(true);
             }
@@ -95,7 +74,6 @@ export const AuthProvider = ({ children }) => {
 
     const fetchProfileAndTenant = async (userId) => {
         try {
-            // Fetch Profile
             const { data: profile } = await supabase.from('profiles').select('*').eq('id', userId).single();
             if (profile) {
                 setProfile(profile);
@@ -105,30 +83,28 @@ export const AuthProvider = ({ children }) => {
                 }
             }
         } catch (error) {
-            // Silent fail
+            console.error('Error fetching profile', error);
         }
     };
 
     const signOut = async () => {
-        localStorage.removeItem('miga_is_authenticated');
         setIsAuthenticated(false);
-        setUser(null);
+        localStorage.removeItem('miga_is_authenticated');
+        localStorage.removeItem('sb-access-token'); // Clean sweep
         setSession(null);
+        setUser(null);
         await supabase.auth.signOut();
-        // Force reload to clean state
         window.location.href = '/';
     };
 
-    // Expose values
     const value = {
-        isAuthenticated, // NEW PRIMARY FLAG
-        user, // May be null if offline
-        session, // May be null if offline
+        isAuthenticated,
+        user,
+        session,
         profile,
         tenant,
-        loading: loading && !isAuthenticated, // If authenticated, never "loading"
+        loading: loading && !isAuthenticated,
         isRecoveryFlow,
-        authError,
         signOut,
         refreshProfile: () => user && fetchProfileAndTenant(user.id)
     };
