@@ -1,24 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { api, getLocal, CACHE_KEYS } from '../../services/api'; // Updated api import
-import { Users, ShoppingBag, DollarSign, TrendingUp, Calendar, AlertTriangle } from 'lucide-react'; // Updated lucide-react imports
+import { api } from '../../services/api';
+import { TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { format, isSameDay } from 'date-fns';
 import TransactionList from '../transactions/TransactionList';
 import ProductionPlanner from '../production/ProductionPlanner';
-import StatsCard from './StatsCard';
-import RecentSales from './RecentSales';
+import ClosingChecklistModal from './ClosingChecklistModal';
+import { CheckCircle } from 'lucide-react';
 
-const Dashboard = () => {
-    // Optimistic Init: Try to load from cache first
-    const [stats, setStats] = useState({
-        toCollection: 0,
-        totalOrders: 0,
-        pendingOrders: 0,
-        totalSales: 0
+const Dashboard = ({ refreshTrigger }) => {
+    const [metrics, setMetrics] = useState({
+        income: 0,
+        expenses: 0,
+        goal: 0,
+        percent: 0,
+        isProfit: false
     });
-    const [recentTransactions, setRecentTransactions] = useState(() => getLocal(CACHE_KEYS.TRANSACTIONS)?.slice(0, 5) || []);
-    const [loading, setLoading] = useState(() => !getLocal(CACHE_KEYS.TRANSACTIONS)); // Only show loader if nothing cached
-
+    const [loading, setLoading] = useState(true);
     const [stockAlerts, setStockAlerts] = useState([]);
     const [isClosingModalOpen, setIsClosingModalOpen] = useState(false);
 
@@ -26,37 +24,28 @@ const Dashboard = () => {
         try {
             const now = new Date();
             const todayStr = format(now, 'yyyy-MM-dd');
-            // Optim: Fetch ONLY today's transactions for the dashboard pulse
-            // This prevents downloading thousands of historical records every few seconds
-            const startOfDay = new Date(now.setHours(0, 0, 0, 0)).toISOString();
 
             const [txs, config, packaging] = await Promise.all([
-                api.transactions.list({ startDate: startOfDay }),
+                api.transactions.list(),
                 api.config.get(),
                 api.packaging.list()
             ]);
 
-            // Debug Logging
-            // console.log("Dashboard Pulse:", { todayStr, txsCount: txs.length });
+            // Debug Logging for User/Dev
+            console.log("Dashboard - Checking Dates:", { todayStr, totalTxs: txs.length });
 
             // Stock Alerts
-            // Stock Alerts - Aggregated by Name to handle duplicates
-            const aggregatedStock = packaging.reduce((acc, item) => {
-                const name = item.type.trim();
-                // ... (rest of logic unchanged, just keeping context)
-                if (!acc[name]) {
-                    acc[name] = { ...item, current_quantity: 0, ids: [] };
-                }
-                acc[name].current_quantity += Number(item.current_quantity);
-                return acc;
-            }, {});
-
-            const alerts = Object.values(aggregatedStock).filter(p => Number(p.current_quantity) <= Number(p.min_alert));
+            const alerts = packaging.filter(p => p.current_quantity <= p.min_alert);
             setStockAlerts(alerts);
 
-            // Txs are already filtered by Supabase for today (>= startOfDay)
-            // But we can double check date-fns just in case of timezone edge cases
-            const todayTxs = txs;
+            // Filter using isSameDay for robustness
+            const todayTxs = txs.filter(t => {
+                const txDate = new Date(t.date);
+                const isToday = isSameDay(txDate, now);
+                // console.log(`Tx ${t.id} (${t.date}): isToday=${isToday}`); // Uncomment for verbose debug
+                return isToday;
+            });
+            console.log("Found today transactions:", todayTxs.length);
 
             const income = todayTxs
                 .filter(t => t.type === 'VENTA')
@@ -67,7 +56,7 @@ const Dashboard = () => {
                 .reduce((sum, t) => sum + Number(t.amount), 0);
 
             const dailyFixedCost = Number(config.monthly_fixed_costs) / 30;
-            const target = dailyFixedCost + variableExpenses;
+            const target = dailyFixedCost + variableExpenses; // The "Break Even" point for today
 
             const percent = target > 0 ? (income / target) * 100 : (income > 0 ? 100 : 0);
 
@@ -75,7 +64,7 @@ const Dashboard = () => {
                 income,
                 expenses: variableExpenses,
                 goal: target,
-                percent: Math.min(percent, 100),
+                percent: Math.min(percent, 100), // Cap for bar width, but value can be higher
                 rawValue: percent,
                 isProfit: percent >= 100
             });
@@ -88,8 +77,8 @@ const Dashboard = () => {
 
     useEffect(() => {
         calculatePulse();
-        // Optim: Poll every 60s instead of 5s to reduce DB load
-        const interval = setInterval(calculatePulse, 60000);
+        // Simulate real-time by polling or simple load
+        const interval = setInterval(calculatePulse, 5000);
         return () => clearInterval(interval);
     }, [refreshTrigger]);
 

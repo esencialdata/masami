@@ -39,14 +39,10 @@ class ErrorBoundary extends Component {
   }
 }
 
-import { AuthProvider } from './context/AuthContext'
-
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ErrorBoundary>
-      <AuthProvider>
-        <App />
-      </AuthProvider>
+      <App />
     </ErrorBoundary>
   </StrictMode>,
 )

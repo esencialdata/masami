@@ -89,17 +89,10 @@ const AddTransactionModal = ({ isOpen, onClose, type, onSuccess }) => {
                 payment_method: 'Efectivo',
             });
 
-            // 2. If Expense + Supply + Qty > 0 -> ADD TO STOCK AND UPDATE PRICE
+            // 2. If Expense + Supply + Qty > 0 -> ADD TO STOCK
             if (type === 'GASTO' && selectedSupplyId && Number(purchaseQty) > 0) {
-                const qty = Number(purchaseQty);
-                const totalAmount = Number(amount);
-                const newUnitCost = totalAmount / qty;
-
-                // Update Price First (triggers history)
-                await api.supplies.update(selectedSupplyId, { current_cost: newUnitCost });
-
-                // Then Update Stock
-                await api.supplies.updateStock(selectedSupplyId, qty);
+                await api.supplies.updateStock(selectedSupplyId, Number(purchaseQty));
+                // Optional: Could update average cost here too, but let's keep it simple.
             }
 
             setAmount('');

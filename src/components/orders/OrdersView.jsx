@@ -1,16 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { api, getLocal } from '../../services/api'; // getLocal used for cache
-import { Plus, Search, Filter, Calendar, CheckCircle, Clock, XCircle, Truck, DollarSign, ChevronDown, ChevronUp } from 'lucide-react';
+import { api } from '../../services/api';
+import { Calendar, CheckCircle, Clock, MapPin, Plus, AlertCircle, Pencil, Trash2 } from 'lucide-react';
 import { format, isToday, isTomorrow, parseISO, isAfter, startOfDay, addDays, isBefore, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
-import Modal from '../ui/Modal';
-import CreateOrderModal from './CreateOrderModal';
+import NewOrderModal from './NewOrderModal';
 
 const OrdersView = () => {
-    const [orders, setOrders] = useState(() => getLocal('bakery_orders') || []);
-    const [loading, setLoading] = useState(() => !getLocal('bakery_orders'));
+    const [orders, setOrders] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
     const [selectedOrder, setSelectedOrder] = useState(null);
 
     const loadOrders = async () => {

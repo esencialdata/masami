@@ -90,7 +90,7 @@ const ReportsView = () => {
                         </div>
                         <h2 className="font-bold text-gray-900">Variación Precios</h2>
                     </div>
-                    <InflationTracker supplies={supplies} dateRange={dateRange} />
+                    <InflationTracker supplies={supplies} />
                 </section>
 
                 {/* 4. Profitability Ranking - NEW */}
