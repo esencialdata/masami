@@ -45,7 +45,8 @@ export const AuthProvider = ({ children }) => {
 
         // 2. Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            console.log('Auth Event:', event);
+            console.log('📢 AUTH EVENT:', event);
+            console.log('👤 SESSION USER:', session?.user?.id);
             if (event === 'PASSWORD_RECOVERY') {
                 setIsRecoveryFlow(true);
             }
@@ -54,8 +55,10 @@ export const AuthProvider = ({ children }) => {
             setUser(session?.user ?? null);
 
             if (session?.user) {
+                console.log('🔄 Fetching Profile/Tenant for:', session.user.id);
                 await fetchProfileAndTenant(session.user.id);
             } else {
+                console.log('❌ No Session User - Clearing Data');
                 setProfile(null);
                 setTenant(null);
                 setLoading(false);
