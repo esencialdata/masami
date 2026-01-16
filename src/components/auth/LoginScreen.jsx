@@ -30,17 +30,24 @@ export default function LoginScreen({ onLogin, onBack, onRegister }) {
                 throw new Error('Login incompleto: No se recibió sesión de usuario.');
             }
 
-            alert('LOGIN OK! User ID: ' + data.user.id + '\nEmail: ' + data.user.email);
+            alert('LOGIN OK [v2.1]! User ID: ' + data.user.id);
             setError(null);
             setLoading(true);
-            // We force a "success" state visual (re-using error box for now or just loading text)
-            // But relying primarily on the reload
 
             if (onLogin) onLogin();
 
             // Manual Hydration (Fix for race condition/missing listener event)
             if (data.session) {
-                await loginManual(data.session);
+                console.log('🚀 Attempting Manual Login with session:', data.session.access_token?.slice(0, 10) + '...');
+                try {
+                    await loginManual(data.session);
+                    console.log('✅ Manual Login Function Completed');
+                } catch (manualErr) {
+                    console.error('💥 Manual Login Failed:', manualErr);
+                    alert('Manual Login Error: ' + manualErr.message);
+                }
+            } else {
+                console.warn('⚠️ No session provided in login response');
             }
 
             if (onLogin) onLogin();
@@ -172,6 +179,7 @@ export default function LoginScreen({ onLogin, onBack, onRegister }) {
                         </button>
                     </p>
                 </div>
+                <div className="absolute bottom-2 right-2 text-[10px] text-brand-coffee/20 font-mono">v2.1 - Manual Hydration</div>
             </div>
         </div>
     );
