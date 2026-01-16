@@ -42,6 +42,19 @@ function App() {
     });
   }, []);
 
+
+
+  // Failsafe: User Authenticated but No Profile (Trigger failed)
+  const [setupError, setSetupError] = useState(null);
+  const [isSettingUp, setIsSettingUp] = useState(false);
+  const { refreshProfile, profile } = useAuth(); // Destructure profile from context
+
+  // 1. Initial Loading State
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center bg-brand-cream text-brand-coffee animate-pulse">Cargando Miga...</div>;
+  }
+
+  // 1.5 Password Recovery Mode
   if (isRecoveryMode) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-brand-cream p-4">
@@ -65,16 +78,6 @@ function App() {
         </div>
       </div>
     );
-  }
-
-  // Failsafe: User Authenticated but No Profile (Trigger failed)
-  const [setupError, setSetupError] = useState(null);
-  const [isSettingUp, setIsSettingUp] = useState(false);
-  const { refreshProfile, profile } = useAuth(); // Destructure profile from context
-
-  // 1. Initial Loading State
-  if (loading) {
-    return <div className="min-h-screen flex items-center justify-center bg-brand-cream text-brand-coffee animate-pulse">Cargando Miga...</div>;
   }
 
   // 2. Unauthenticated State
