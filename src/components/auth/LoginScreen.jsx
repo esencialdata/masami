@@ -20,13 +20,21 @@ export default function LoginScreen({ onLogin, onBack, onRegister }) {
 
             if (error) throw error;
 
-            // Success handler usually managed by AuthContext via onAuthStateChange
-            // But we can trigger a UI feedback or just wait for App to re-render
-            // onLogin can be used for UI transitions if needed, though App usually handles it via `user` check
-            // Success handler
-            if (onLogin) {
-                onLogin();
-            }
+            // Success Handler
+            console.log('Login successful. Waiting for session...');
+            setError(null);
+            setLoading(true);
+            // We force a "success" state visual (re-using error box for now or just loading text)
+            // But relying primarily on the reload
+
+            if (onLogin) onLogin();
+
+            // FAILSAFE: Force reload after 1s to ensure session is picked up from storage
+            // This is critical if the reactive AuthContext is stalling
+            setTimeout(() => {
+                console.log('Forcing reload for session sync...');
+                window.location.reload();
+            }, 1000);
 
         } catch (err) {
             console.error('Login error:', err);
@@ -35,10 +43,12 @@ export default function LoginScreen({ onLogin, onBack, onRegister }) {
             if (err.message.includes('Email not confirmed')) msg = 'Por favor confirma tu correo electrónico.';
             if (err.message.includes('Invalid login credentials')) msg = 'Correo o contraseña incorrectos.';
             setError(msg);
-        } finally {
             setLoading(false);
         }
     };
+
+    // Debug Check
+    const hasSupabase = !!supabase;
 
     return (
         <div className="min-h-screen bg-brand-cream flex flex-col items-center justify-center p-4 transition-colors duration-300 font-display">
