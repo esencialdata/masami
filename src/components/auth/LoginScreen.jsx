@@ -30,7 +30,7 @@ export default function LoginScreen({ onLogin, onBack, onRegister }) {
                 throw new Error('Login incompleto: No se recibió sesión de usuario.');
             }
 
-            alert('LOGIN OK [v2.2-FIXED]! User ID: ' + data.user.id);
+            // alert('LOGIN OK [v2.2-FIXED]! User ID: ' + data.user.id);
             setError(null);
             setLoading(true);
 
@@ -44,7 +44,7 @@ export default function LoginScreen({ onLogin, onBack, onRegister }) {
                     console.log('✅ Manual Login Function Completed');
                 } catch (manualErr) {
                     console.error('💥 Manual Login Failed:', manualErr);
-                    alert('Manual Login Error: ' + manualErr.message);
+                    setError('Error al iniciar sesión. Intenta recargar.');
                 }
             } else {
                 console.warn('⚠️ No session provided in login response');
@@ -179,7 +179,6 @@ export default function LoginScreen({ onLogin, onBack, onRegister }) {
                         </button>
                     </p>
                 </div>
-                <div className="absolute bottom-2 right-2 text-[10px] text-brand-coffee/20 font-mono">v2.2 - Provider Active</div>
             </div>
         </div>
     );
