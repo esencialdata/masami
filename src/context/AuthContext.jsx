@@ -95,7 +95,14 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const fetchProfileAndTenant = async (userId) => {
+        // Safety Timeout to prevent infinite loading
+        const timeoutId = setTimeout(() => {
+            console.error('⏰ Fetch timed out - forcing app load');
+            setLoading(false);
+        }, 5000);
+
         try {
+            console.log('👤 Fetching Profile for:', userId);
             // Fetch Profile
             const { data: profile, error: profileError } = await supabase
                 .from('profiles')
@@ -103,25 +110,34 @@ export const AuthProvider = ({ children }) => {
                 .eq('id', userId)
                 .single();
 
+            if (profileError) console.error('❌ Profile Error:', profileError);
+            else console.log('✅ Profile Found:', profile?.id);
+
             if (profile) {
                 setProfile(profile);
                 // Fetch Tenant
                 if (profile.tenant_id) {
+                    console.log('🏢 Fetching Tenant:', profile.tenant_id);
                     const { data: tenant, error: tenantError } = await supabase
                         .from('tenants')
-                        .select('*, plan_status, trial_ends_at') // Explicitly ensure these
+                        .select('*, plan_status, trial_ends_at')
                         .eq('id', profile.tenant_id)
                         .single();
 
+                    if (tenantError) console.error('❌ Tenant Error:', tenantError);
+
                     if (tenant) {
-                        console.log('🏢 Tenant Loaded:', tenant.name, '| Status:', tenant.plan_status);
+                        console.log('✅ Tenant Loaded:', tenant.name, '| Status:', tenant.plan_status);
                         setTenant(tenant);
                     }
+                } else {
+                    console.log('⚠️ Profile has no tenant_id');
                 }
             }
         } catch (error) {
             console.error('Error fetching user data:', error);
         } finally {
+            clearTimeout(timeoutId);
             setLoading(false);
         }
     };
