@@ -11,12 +11,10 @@ import Settings from './components/settings/Settings';
 import ReportsView from './components/reports/ReportsView';
 
 import LandingPage from './components/landing/LandingPage';
-import LoginScreen from './components/auth/LoginScreen';
-import RegisterScreen from './components/auth/RegisterScreen';
-import SubscriptionGuard from './components/auth/SubscriptionGuard';
+import ResetPasswordScreen from './components/auth/ResetPasswordScreen';
 
 function App() {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading, signOut, isRecoveryFlow, profile, refreshProfile } = useAuth();
 
   // Local state for UI flow only (not auth state)
   const [showLogin, setShowLogin] = useState(false);
@@ -29,25 +27,22 @@ function App() {
     setLastUpdated(Date.now());
   };
 
-  // Password Recovery State
-  const [isRecoveryMode, setIsRecoveryMode] = useState(false);
+  // 1. Initial Loading State
+  // Don't show anything until we are sure about the session
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center bg-brand-cream text-brand-coffee animate-pulse">Cargando Miga...</div>;
+  }
 
-  React.useEffect(() => {
-    import('./services/api').then(({ supabase }) => {
-      supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === "PASSWORD_RECOVERY") {
-          setIsRecoveryMode(true);
-        }
-      });
-    });
-  }, []);
+  // 2. Password Recovery Flow (Highest Priority if active)
+  if (isRecoveryFlow) {
+    return <ResetPasswordScreen />;
+  }
 
 
 
   // Failsafe: User Authenticated but No Profile (Trigger failed)
   const [setupError, setSetupError] = useState(null);
   const [isSettingUp, setIsSettingUp] = useState(false);
-  const { refreshProfile, profile } = useAuth(); // Destructure profile from context
 
   // 1. Initial Loading State
   if (loading) {

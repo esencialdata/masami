@@ -8,13 +8,13 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [session, setSession] = useState(null);
+    const [loading, setLoading] = useState(true);
     const [profile, setProfile] = useState(null);
     const [tenant, setTenant] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [isRecoveryFlow, setIsRecoveryFlow] = useState(false);
 
     useEffect(() => {
         // 1. Check active session
-        // Only set loading false if NO hash is present (handling redirect/recovery)
         const isRedirect = window.location.hash && (
             window.location.hash.includes('access_token') ||
             window.location.hash.includes('error') ||
@@ -22,7 +22,6 @@ export const AuthProvider = ({ children }) => {
         );
 
         if (isRedirect) {
-            // Let onAuthStateChange handle it
             console.log('Auth redirect detected, waiting for event...');
         }
 
@@ -32,15 +31,20 @@ export const AuthProvider = ({ children }) => {
             if (session?.user) {
                 fetchProfileAndTenant(session.user.id);
             } else if (!isRedirect) {
-                // Only stop loading if we aren't waiting for a redirect hash to process
                 setLoading(false);
             }
         });
 
         // 2. Listen for auth changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            console.log('Auth Event:', event);
+            if (event === 'PASSWORD_RECOVERY') {
+                setIsRecoveryFlow(true);
+            }
+
             setSession(session);
             setUser(session?.user ?? null);
+
             if (session?.user) {
                 await fetchProfileAndTenant(session.user.id);
             } else {
@@ -92,6 +96,7 @@ export const AuthProvider = ({ children }) => {
         profile,
         tenant,
         loading,
+        isRecoveryFlow,
         signOut,
         refreshProfile: () => user && fetchProfileAndTenant(user.id)
     };
