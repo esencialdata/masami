@@ -126,6 +126,17 @@ export const api = {
                     const { data, error } = await withTimeout(query);
                     if (error) throw error;
 
+                    // PARANOID CACHE PROTECTION
+                    // If server returns empty, but we have data, assume false empty (RLS fail or sync issue)
+                    // Only legitimate if we filtered (startDate etc), but for full lists it's suspicious.
+                    if (data.length === 0 && !options.startDate && !options.endDate && !options.limit) {
+                        const cached = getLocal(STORAGE_KEYS.TRANSACTIONS);
+                        if (cached && cached.length > 0) {
+                            console.warn('🛡️ Paranoid Protection: Server returned 0 transactions, but cache has data. Ignoring empty server response.');
+                            return cached;
+                        }
+                    }
+
                     // Cache full list only if no filters applied (simple heuristic)
                     if (!options.startDate && !options.endDate && !options.limit) {
                         setLocal(STORAGE_KEYS.TRANSACTIONS, data);
@@ -197,6 +208,16 @@ export const api = {
                 try {
                     const { data, error } = await withTimeout(supabase.from('customers').select('*').order('name'));
                     if (error) throw error;
+
+                    // PARANOID CACHE PROTECTION
+                    if (data.length === 0) {
+                        const cached = getLocal(STORAGE_KEYS.CUSTOMERS);
+                        if (cached && cached.length > 0) {
+                            console.warn('🛡️ Paranoid Protection: Server returned 0 customers. Ignoring.');
+                            return cached;
+                        }
+                    }
+
                     setLocal(STORAGE_KEYS.CUSTOMERS, data); // CACHE UPDATE
                     return data;
                 } catch (err) {
@@ -307,6 +328,16 @@ export const api = {
                 try {
                     const { data, error } = await withTimeout(supabase.from('products').select('*').order('name'));
                     if (error) throw error;
+
+                    // PARANOID CACHE PROTECTION
+                    if (data.length === 0) {
+                        const cached = getLocal(STORAGE_KEYS.PRODUCTS);
+                        if (cached && cached.length > 0) {
+                            console.warn('🛡️ Paranoid Protection: Server returned 0 products. Ignoring.');
+                            return cached;
+                        }
+                    }
+
                     setLocal(STORAGE_KEYS.PRODUCTS, data); // CACHE UPDATE
                     return data;
                 } catch (err) {
@@ -357,6 +388,16 @@ export const api = {
                 try {
                     const { data, error } = await withTimeout(supabase.from('supplies').select('*').order('name'));
                     if (error) throw error;
+
+                    // PARANOID CACHE PROTECTION
+                    if (data.length === 0) {
+                        const cached = getLocal('bakery_supplies');
+                        if (cached && cached.length > 0) {
+                            console.warn('🛡️ Paranoid Protection: Server returned 0 supplies. Ignoring.');
+                            return cached;
+                        }
+                    }
+
                     setLocal('bakery_supplies', data); // CACHE UPDATE
                     return data;
                 } catch (err) {
@@ -625,6 +666,16 @@ export const api = {
                 try {
                     const { data, error } = await withTimeout(supabase.from('packaging_inventory').select('*').order('type'));
                     if (error) throw error;
+
+                    // PARANOID CACHE PROTECTION
+                    if (data.length === 0) {
+                        const cached = getLocal(STORAGE_KEYS.PACKAGING);
+                        if (cached && cached.length > 0) {
+                            console.warn('🛡️ Paranoid Protection: Server returned 0 packaging items. Ignoring.');
+                            return cached;
+                        }
+                    }
+
                     setLocal(STORAGE_KEYS.PACKAGING, data); // CACHE UPDATE
                     return data;
                 } catch (err) {
@@ -721,6 +772,20 @@ export const api = {
                 try {
                     const { data, error } = await withTimeout(supabase.from('orders').select('*, customers(name, zone)').order('delivery_date', { ascending: true }));
                     if (error) throw error;
+
+                    // PARANOID CACHE PROTECTION
+                    if (data.length === 0) {
+                        const cached = getLocal('bakery_orders');
+                        if (cached && cached.length > 0) {
+                            console.warn('🛡️ Paranoid Protection: Server returned 0 orders. Ignoring.');
+                            const customers = getLocal(STORAGE_KEYS.CUSTOMERS);
+                            return cached.map(o => {
+                                const c = customers.find(cust => cust.id === o.client_id);
+                                return { ...o, customers: c ? { name: c.name, zone: c.zone } : { name: 'Cliente Eliminado', zone: '' } };
+                            }).sort((a, b) => new Date(a.delivery_date) - new Date(b.delivery_date));
+                        }
+                    }
+
                     setLocal('bakery_orders', data); // CACHE UPDATE
                     return data;
                 } catch (err) {
