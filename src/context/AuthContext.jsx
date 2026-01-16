@@ -11,23 +11,31 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const [profile, setProfile] = useState(null);
     const [tenant, setTenant] = useState(null);
-    const [isRecoveryFlow, setIsRecoveryFlow] = useState(false);
+    const [authError, setAuthError] = useState(null);
 
     useEffect(() => {
         // 1. Check active session
-        // Only set loading false if NO hash is present (handling redirect/recovery)
-        // We broaden the check to catch 'signup', 'invite', 'recovery', and standard tokens
-        // AND PKCE 'code' in search params
         const hash = window.location.hash;
         const search = window.location.search;
 
         const isRedirect = (hash && (
             hash.includes('access_token') ||
-            hash.includes('error') ||
             hash.includes('type=recovery') ||
             hash.includes('type=signup') ||
             hash.includes('type=invite')
         )) || (search && search.includes('code='));
+
+        // Handle OTP Errors specially
+        if (hash && hash.includes('error=')) {
+            const params = new URLSearchParams(hash.substring(1)); // remove #
+            const errCode = params.get('error_code');
+            const errMsg = params.get('error_description')?.replace(/\+/g, ' ');
+
+            console.warn('🚨 Auth Redirect Error:', errCode, errMsg);
+            setAuthError(errMsg);
+            setLoading(false); // Stop loading to show error
+            return;
+        }
 
         if (isRedirect) {
             console.log('Auth redirect detected, waiting for event...');
@@ -83,10 +91,14 @@ export const AuthProvider = ({ children }) => {
                 if (profile.tenant_id) {
                     const { data: tenant, error: tenantError } = await supabase
                         .from('tenants')
-                        .select('*')
+                        .select('*, plan_status, trial_ends_at') // Explicitly ensure these
                         .eq('id', profile.tenant_id)
                         .single();
-                    if (tenant) setTenant(tenant);
+
+                    if (tenant) {
+                        console.log('🏢 Tenant Loaded:', tenant.name, '| Status:', tenant.plan_status);
+                        setTenant(tenant);
+                    }
                 }
             }
         } catch (error) {
@@ -108,6 +120,7 @@ export const AuthProvider = ({ children }) => {
         tenant,
         loading,
         isRecoveryFlow,
+        authError,
         signOut,
         refreshProfile: () => user && fetchProfileAndTenant(user.id)
     };

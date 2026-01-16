@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { supabase } from '../../services/api';
 
 const LandingPage = ({ onLogin, onGetStarted }) => {
     // Toggle for annual/monthly pricing
@@ -650,7 +651,7 @@ const LandingPage = ({ onLogin, onGetStarted }) => {
             </section>
 
             {/* Footer */}
-            < footer className="bg-brand-coffee text-brand-cream pt-20 pb-10" >
+            <footer className="bg-brand-coffee text-brand-cream pt-20 pb-10">
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="flex flex-col items-center text-center mb-16">
                         <h2 className="text-4xl md:text-5xl font-bold mb-6 text-brand-cream">¿Listo para sacarle toda la miga a tu negocio?</h2>
@@ -677,9 +678,26 @@ const LandingPage = ({ onLogin, onGetStarted }) => {
                             © 2024 Miga Tech. Hecho con harina y código.
                         </div>
                     </div>
+
+                    {/* DEBUG TOOL */}
+                    <div className="mt-8 text-center text-xs text-white/20">
+                        <button
+                            onClick={async () => {
+                                alert('Verificando sesión...');
+                                const { data, error } = await supabase.auth.getUser();
+                                if (error) alert('Error: ' + error.message);
+                                else if (data?.user) alert('Sesión OK: ' + data.user.email);
+                                else alert('No hay sesión activa (NULL)');
+                            }}
+                            className="hover:text-white underline"
+                        >
+                            [Debug] Verificar Estado de Sesión
+                        </button>
+                    </div>
+
                 </div>
-            </footer >
-        </div >
+            </footer>
+        </div>
     );
 };
 

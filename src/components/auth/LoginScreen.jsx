@@ -29,12 +29,9 @@ export default function LoginScreen({ onLogin, onBack, onRegister }) {
 
             if (onLogin) onLogin();
 
-            // FAILSAFE: Force reload after 1s to ensure session is picked up from storage
-            // This is critical if the reactive AuthContext is stalling
-            setTimeout(() => {
-                console.log('Forcing reload for session sync...');
-                window.location.reload();
-            }, 1000);
+            // Let AuthContext handle the state update via onAuthStateChange
+            // If it doesn't trigger automatically, calling onLogin is a fallback (but currently empty in App.jsx)
+            if (onLogin) onLogin();
 
         } catch (err) {
             console.error('Login error:', err);

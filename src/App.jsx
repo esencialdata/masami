@@ -23,33 +23,74 @@ function App() {
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
 
+  // Auto-detect invite link
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('invite')) {
+      setShowRegister(true);
+    }
+  }, []);
+
   const [activeTab, setActiveTab] = useState('dashboard');
   const [lastUpdated, setLastUpdated] = useState(() => Date.now());
+
+  // Failsafe State
+  const [setupError, setSetupError] = useState(null);
+  const [isSettingUp, setIsSettingUp] = useState(false);
 
   const handleTransactionAdded = () => {
     setLastUpdated(Date.now());
   };
 
+  // DEBUG: Global State Tracker
+  const DebugBar = () => (
+    <div className="fixed top-0 left-0 w-full bg-black/80 text-white text-[10px] p-1 z-[9999] flex gap-4 justify-center font-mono pointer-events-none">
+      <span>LOADING: {loading ? 'YES' : 'NO'}</span>
+      <span>USER: {user ? user.id.slice(0, 6) + '...' : 'NULL'}</span>
+      <span>PROFILE: {profile ? profile.role : 'NULL'}</span>
+      <span>TENANT: {tenant ? tenant.name : 'NULL'}</span>
+    </div>
+  );
+
   // 1. Initial Loading State
   // Don't show anything until we are sure about the session
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center bg-brand-cream text-brand-coffee animate-pulse">Cargando Miga...</div>;
+    return (
+      <>
+        <DebugBar />
+        <div className="min-h-screen flex items-center justify-center bg-brand-cream text-brand-coffee animate-pulse">Cargando Miga...</div>
+      </>
+    );
   }
 
-  // 2. Password Recovery Flow (Highest Priority if active)
+  // 2. Auth Error Flow (Link Expired, etc)
+  if (authError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-brand-cream p-4">
+        <div className="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full border-t-8 border-red-500 text-center">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <span className="material-symbols-outlined text-3xl text-red-600">link_off</span>
+          </div>
+          <h2 className="text-2xl font-bold text-brand-coffee mb-2">Enlace no válido</h2>
+          <p className="text-brand-coffee/60 mb-6">{authError === 'Email link is invalid or has expired' ? 'Este enlace de confirmación ya expiró o ya fue usado.' : authError}</p>
+
+          <button
+            onClick={() => {
+              window.location.hash = ''; // Clear error
+              window.location.reload();
+            }}
+            className="w-full bg-brand-coffee text-white font-bold py-3 rounded-xl hover:bg-brand-coffee/90 transition-all"
+          >
+            Volver al Inicio
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // 3. Password Recovery Flow
   if (isRecoveryFlow) {
     return <ResetPasswordScreen />;
-  }
-
-
-
-  // Failsafe: User Authenticated but No Profile (Trigger failed)
-  const [setupError, setSetupError] = useState(null);
-  const [isSettingUp, setIsSettingUp] = useState(false);
-
-  // 1. Initial Loading State
-  if (loading) {
-    return <div className="min-h-screen flex items-center justify-center bg-brand-cream text-brand-coffee animate-pulse">Cargando Miga...</div>;
   }
 
 
@@ -77,10 +118,13 @@ function App() {
     }
     // Landing Page
     return (
-      <LandingPage
-        onGetStarted={() => setShowRegister(true)}
-        onLogin={() => setShowLogin(true)}
-      />
+      <>
+        <DebugBar />
+        <LandingPage
+          onGetStarted={() => setShowRegister(true)}
+          onLogin={() => setShowLogin(true)}
+        />
+      </>
     );
   }
 
