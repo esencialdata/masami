@@ -13,7 +13,7 @@ export default function LoginScreen({ onLogin, onBack, onRegister }) {
         setError(null);
 
         try {
-            const { error } = await supabase.auth.signInWithPassword({
+            const { data, error } = await supabase.auth.signInWithPassword({
                 email,
                 password,
             });
@@ -22,6 +22,7 @@ export default function LoginScreen({ onLogin, onBack, onRegister }) {
 
             // Success Handler
             console.log('Login successful. Waiting for session...');
+            alert('LOGIN OK! Session User: ' + data.user.id);
             setError(null);
             setLoading(true);
             // We force a "success" state visual (re-using error box for now or just loading text)
