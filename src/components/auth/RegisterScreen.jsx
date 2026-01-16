@@ -157,6 +157,7 @@ export default function RegisterScreen({ onLogin }) {
                             type="text"
                             name="name"
                             required
+                            autocomplete="name"
                             value={formData.name}
                             onChange={handleChange}
                             className="w-full px-4 py-3 rounded-xl border border-brand-coffee/20 bg-background-light focus:outline-none focus:ring-2 focus:ring-brand-gold/50 focus:border-brand-gold transition-all"
@@ -171,6 +172,7 @@ export default function RegisterScreen({ onLogin }) {
                                 type="text"
                                 name="businessName"
                                 required
+                                autocomplete="organization"
                                 value={formData.businessName}
                                 onChange={handleChange}
                                 className="w-full px-4 py-3 rounded-xl border border-brand-coffee/20 bg-background-light focus:outline-none focus:ring-2 focus:ring-brand-gold/50 focus:border-brand-gold transition-all"
@@ -185,6 +187,7 @@ export default function RegisterScreen({ onLogin }) {
                             type="email"
                             name="email"
                             required
+                            autocomplete="email"
                             value={formData.email}
                             onChange={handleChange}
                             className="w-full px-4 py-3 rounded-xl border border-brand-coffee/20 bg-background-light focus:outline-none focus:ring-2 focus:ring-brand-gold/50 focus:border-brand-gold transition-all"
@@ -198,6 +201,7 @@ export default function RegisterScreen({ onLogin }) {
                             type="password"
                             name="password"
                             required
+                            autocomplete="new-password"
                             minLength={6}
                             value={formData.password}
                             onChange={handleChange}

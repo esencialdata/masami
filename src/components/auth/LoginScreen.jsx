@@ -90,6 +90,7 @@ export default function LoginScreen({ onLogin, onBack, onRegister }) {
                         <input
                             type="email"
                             required
+                            autocomplete="email"
                             value={email}
                             onChange={e => { setEmail(e.target.value); setError(null); }}
                             placeholder="Correo electrónico"
@@ -101,6 +102,7 @@ export default function LoginScreen({ onLogin, onBack, onRegister }) {
                         <input
                             type="password"
                             required
+                            autocomplete="current-password"
                             value={password}
                             onChange={e => { setPassword(e.target.value); setError(null); }}
                             placeholder="Contraseña"
