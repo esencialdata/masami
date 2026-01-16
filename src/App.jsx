@@ -151,10 +151,6 @@ function App() {
 
         return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-brand-cream p-4 text-center">
-          {/* DEBUG OVERLAY */}
-          <div className="absolute top-0 left-0 bg-black text-xs text-white p-2 opacity-50 z-50">
-            User: {user?.id} | Profile: {profile ? 'Yes' : 'NULL'}
-          </div>
           <div className="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full border border-brand-coffee/10">
             <img src="/app_icon.svg" className="w-20 h-20 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-brand-coffee mb-2">Finalizando Configuración</h2>
