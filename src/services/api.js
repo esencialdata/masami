@@ -94,20 +94,25 @@ export const api = {
     transactions: {
         list: async (options = {}) => {
             if (supabase) {
-                let query = supabase.from('transactions').select('*').order('date', { ascending: false });
+                try {
+                    let query = supabase.from('transactions').select('*').order('date', { ascending: false });
 
-                if (options.limit) query = query.limit(options.limit);
-                if (options.startDate) query = query.gte('date', options.startDate);
-                if (options.endDate) query = query.lte('date', options.endDate);
+                    if (options.limit) query = query.limit(options.limit);
+                    if (options.startDate) query = query.gte('date', options.startDate);
+                    if (options.endDate) query = query.lte('date', options.endDate);
 
-                const { data, error } = await withTimeout(query);
-                if (error) throw error;
+                    const { data, error } = await withTimeout(query);
+                    if (error) throw error;
 
-                // Cache full list only if no filters applied (simple heuristic)
-                if (!options.startDate && !options.endDate && !options.limit) {
-                    setLocal(STORAGE_KEYS.TRANSACTIONS, data);
+                    // Cache full list only if no filters applied (simple heuristic)
+                    if (!options.startDate && !options.endDate && !options.limit) {
+                        setLocal(STORAGE_KEYS.TRANSACTIONS, data);
+                    }
+                    return data;
+                } catch (err) {
+                    console.warn('⚠️ Network failed/timed out, falling back to cache (Transactions)', err);
+                    // Fallback handled below
                 }
-                return data;
             }
             // Local fallback
             let data = getLocal(STORAGE_KEYS.TRANSACTIONS) || [];
@@ -158,10 +163,15 @@ export const api = {
     customers: {
         list: async () => {
             if (supabase) {
-                const { data, error } = await withTimeout(supabase.from('customers').select('*').order('name'));
-                if (error) throw error;
-                setLocal(STORAGE_KEYS.CUSTOMERS, data); // CACHE UPDATE
-                return data;
+                try {
+                    const { data, error } = await withTimeout(supabase.from('customers').select('*').order('name'));
+                    if (error) throw error;
+                    setLocal(STORAGE_KEYS.CUSTOMERS, data); // CACHE UPDATE
+                    return data;
+                } catch (err) {
+                    console.warn('⚠️ Network failed/timed out, falling back to cache (Customers)', err);
+                    return getLocal(STORAGE_KEYS.CUSTOMERS);
+                }
             }
             return getLocal(STORAGE_KEYS.CUSTOMERS);
         },
@@ -225,12 +235,17 @@ export const api = {
     config: {
         get: async () => {
             if (supabase) {
-                const { data, error } = await withTimeout(supabase.from('configuration').select('*').single());
-                if (error) return { monthly_fixed_costs: 15000 };
-                setLocal(STORAGE_KEYS.CONFIG, data); // CACHE UPDATE
-                return data;
+                try {
+                    const { data, error } = await withTimeout(supabase.from('configuration').select('*').single());
+                    if (error) throw error; // Go to catch
+                    setLocal(STORAGE_KEYS.CONFIG, data); // CACHE UPDATE
+                    return data;
+                } catch (err) {
+                    console.warn('⚠️ Network failed/timed out, falling back to cache (Config)', err);
+                    return getLocal(STORAGE_KEYS.CONFIG) || { monthly_fixed_costs: 15000 };
+                }
             }
-            return getLocal(STORAGE_KEYS.CONFIG);
+            return getLocal(STORAGE_KEYS.CONFIG) || { monthly_fixed_costs: 15000 };
         },
         update: async (newConfig) => {
             if (supabase) {
@@ -245,10 +260,15 @@ export const api = {
     products: {
         list: async () => {
             if (supabase) {
-                const { data, error } = await withTimeout(supabase.from('products').select('*').order('name'));
-                if (error) throw error;
-                setLocal(STORAGE_KEYS.PRODUCTS, data); // CACHE UPDATE
-                return data;
+                try {
+                    const { data, error } = await withTimeout(supabase.from('products').select('*').order('name'));
+                    if (error) throw error;
+                    setLocal(STORAGE_KEYS.PRODUCTS, data); // CACHE UPDATE
+                    return data;
+                } catch (err) {
+                    console.warn('⚠️ Network failed/timed out, falling back to cache (Products)', err);
+                    return getLocal(STORAGE_KEYS.PRODUCTS);
+                }
             }
             return getLocal(STORAGE_KEYS.PRODUCTS);
         },
@@ -283,10 +303,15 @@ export const api = {
     supplies: {
         list: async () => {
             if (supabase) {
-                const { data, error } = await withTimeout(supabase.from('supplies').select('*').order('name'));
-                if (error) throw error;
-                setLocal('bakery_supplies', data); // CACHE UPDATE
-                return data;
+                try {
+                    const { data, error } = await withTimeout(supabase.from('supplies').select('*').order('name'));
+                    if (error) throw error;
+                    setLocal('bakery_supplies', data); // CACHE UPDATE
+                    return data;
+                } catch (err) {
+                    console.warn('⚠️ Network failed/timed out, falling back to cache (Supplies)', err);
+                    return getLocal('bakery_supplies');
+                }
             }
             return getLocal('bakery_supplies');
         },
@@ -539,10 +564,15 @@ export const api = {
     packaging: {
         list: async () => {
             if (supabase) {
-                const { data, error } = await withTimeout(supabase.from('packaging_inventory').select('*').order('type'));
-                if (error) throw error;
-                setLocal(STORAGE_KEYS.PACKAGING, data); // CACHE UPDATE
-                return data;
+                try {
+                    const { data, error } = await withTimeout(supabase.from('packaging_inventory').select('*').order('type'));
+                    if (error) throw error;
+                    setLocal(STORAGE_KEYS.PACKAGING, data); // CACHE UPDATE
+                    return data;
+                } catch (err) {
+                    console.warn('⚠️ Network failed/timed out, falling back to cache (Packaging)', err);
+                    return getLocal(STORAGE_KEYS.PACKAGING);
+                }
             }
             return getLocal(STORAGE_KEYS.PACKAGING);
         },
@@ -618,10 +648,21 @@ export const api = {
     orders: {
         list: async () => {
             if (supabase) {
-                const { data, error } = await withTimeout(supabase.from('orders').select('*, customers(name, zone)').order('delivery_date', { ascending: true }));
-                if (error) throw error;
-                setLocal('bakery_orders', data); // CACHE UPDATE
-                return data;
+                try {
+                    const { data, error } = await withTimeout(supabase.from('orders').select('*, customers(name, zone)').order('delivery_date', { ascending: true }));
+                    if (error) throw error;
+                    setLocal('bakery_orders', data); // CACHE UPDATE
+                    return data;
+                } catch (err) {
+                    console.warn('⚠️ Network failed/timed out, falling back to cache (Orders)', err);
+                    const orders = getLocal('bakery_orders');
+                    const customers = getLocal(STORAGE_KEYS.CUSTOMERS);
+                    // Hydrate manually since API fails
+                    return orders.map(o => {
+                        const c = customers.find(cust => cust.id === o.client_id);
+                        return { ...o, customers: c ? { name: c.name, zone: c.zone } : { name: 'Cliente Eliminado', zone: '' } };
+                    }).sort((a, b) => new Date(a.delivery_date) - new Date(b.delivery_date));
+                }
             }
             const orders = getLocal('bakery_orders');
             const customers = getLocal(STORAGE_KEYS.CUSTOMERS);

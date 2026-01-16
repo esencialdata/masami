@@ -22,7 +22,7 @@ const ProductList = () => {
             setProducts(data || []);
         } catch (e) {
             console.error("Failed to load products", e);
-            setProducts([]);
+            // setProducts([]); // FIXED: Do not wipe cache on error
         } finally {
             setLoading(false);
         }
@@ -49,8 +49,8 @@ const ProductList = () => {
                         onClick={() => setActiveTab('products')}
                         className={`px - 6 py - 2 rounded - lg text - sm font - bold transition - all whitespace - nowrap ${
     activeTab === 'products'
-    ? 'bg-white text-gray-900 shadow-sm'
-    : 'text-gray-500 hover:text-gray-700'
+        ? 'bg-white text-gray-900 shadow-sm'
+        : 'text-gray-500 hover:text-gray-700'
 } `}
                     >
                         Catálogo
@@ -59,8 +59,8 @@ const ProductList = () => {
                         onClick={() => setActiveTab('supplies')}
                         className={`px - 6 py - 2 rounded - lg text - sm font - bold transition - all whitespace - nowrap ${
     activeTab === 'supplies'
-    ? 'bg-white text-gray-900 shadow-sm'
-    : 'text-gray-500 hover:text-gray-700'
+        ? 'bg-white text-gray-900 shadow-sm'
+        : 'text-gray-500 hover:text-gray-700'
 } `}
                     >
                         Insumos
@@ -69,8 +69,8 @@ const ProductList = () => {
                         onClick={() => setActiveTab('packaging')}
                         className={`px - 6 py - 2 rounded - lg text - sm font - bold transition - all whitespace - nowrap ${
     activeTab === 'packaging'
-    ? 'bg-white text-gray-900 shadow-sm'
-    : 'text-gray-500 hover:text-gray-700'
+        ? 'bg-white text-gray-900 shadow-sm'
+        : 'text-gray-500 hover:text-gray-700'
 } `}
                     >
                         Empaques
