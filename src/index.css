@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #d39e17;
+  --color-primary: #ff5206;
   --color-success: #84A98C;
   --color-background: #F9F7F2;
 
@@ -10,7 +10,8 @@
   --color-brand-cream-dark: #E6E2D6;
   --color-brand-coffee: #2C1810;
   --color-brand-coffee-light: #4A3B32;
-  --color-brand-gold: #D39E17;
+  --color-brand-gold: #ff5206;
+  /* Updated from #D39E17 to Logo Orange */
 }
 
 body {
