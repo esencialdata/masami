@@ -1,22 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { api } from '../../services/api';
-import { TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
+import { api, getLocal, CACHE_KEYS } from '../../services/api'; // Updated api import
+import { Users, ShoppingBag, DollarSign, TrendingUp, Calendar, AlertTriangle } from 'lucide-react'; // Updated lucide-react imports
 import { cn } from '../../lib/utils';
 import { format, isSameDay } from 'date-fns';
 import TransactionList from '../transactions/TransactionList';
 import ProductionPlanner from '../production/ProductionPlanner';
-import ClosingChecklistModal from './ClosingChecklistModal';
-import { CheckCircle } from 'lucide-react';
+import StatsCard from './StatsCard';
+import RecentSales from './RecentSales';
 
-const Dashboard = ({ refreshTrigger }) => {
-    const [metrics, setMetrics] = useState({
-        income: 0,
-        expenses: 0,
-        goal: 0,
-        percent: 0,
-        isProfit: false
+const Dashboard = () => {
+    // Optimistic Init: Try to load from cache first
+    const [stats, setStats] = useState({
+        toCollection: 0,
+        totalOrders: 0,
+        pendingOrders: 0,
+        totalSales: 0
     });
-    const [loading, setLoading] = useState(true);
+    const [recentTransactions, setRecentTransactions] = useState(() => getLocal(CACHE_KEYS.TRANSACTIONS)?.slice(0, 5) || []);
+    const [loading, setLoading] = useState(() => !getLocal(CACHE_KEYS.TRANSACTIONS)); // Only show loader if nothing cached
+
     const [stockAlerts, setStockAlerts] = useState([]);
     const [isClosingModalOpen, setIsClosingModalOpen] = useState(false);
 

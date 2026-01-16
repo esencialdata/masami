@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { MessageCircle, Phone, Star, UserPlus, Pencil } from 'lucide-react';
-import { api } from '../../services/api';
+import { MessageCircle, Pencil, Search, UserPlus, Phone, MapPin, ShoppingBag, Edit, Star, Trash2 } from 'lucide-react';
+import { api, getLocal, CACHE_KEYS } from '../../services/api';
 import AddClientModal from './AddClientModal';
+import Modal from '../ui/Modal';
 
 const ClientList = () => {
-    const [clients, setClients] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [clients, setClients] = useState(() => getLocal(CACHE_KEYS.CUSTOMERS) || []);
+    const [loading, setLoading] = useState(() => !getLocal(CACHE_KEYS.CUSTOMERS));
+    const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedZone, setSelectedZone] = useState('Todas');
     const [editingClient, setEditingClient] = useState(null);

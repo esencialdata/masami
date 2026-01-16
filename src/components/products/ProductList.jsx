@@ -1,15 +1,15 @@
+```javascript
 import React, { useEffect, useState } from 'react';
-import { api } from '../../services/api';
-import { Package, ToggleLeft, ToggleRight, Plus, Pencil, ChefHat } from 'lucide-react';
-import SupplyList from '../supplies/SupplyList';
-import PackagingList from './PackagingList';
-import AddProductModal from './AddProductModal';
-import RecipeEditor from './RecipeEditor';
+import { api, getLocal, CACHE_KEYS } from '../../services/api';
+import { Plus, Search, Edit, Trash2, Package, DollarSign, BarChart2 } from 'lucide-react';
+import Modal from '../ui/Modal';
+import ProductRecipeModal from './ProductRecipeModal';
 
 const ProductList = () => {
     const [activeTab, setActiveTab] = useState('products');
-    const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [products, setProducts] = useState(() => getLocal(CACHE_KEYS.PRODUCTS) || []);
+    const [loading, setLoading] = useState(() => !getLocal(CACHE_KEYS.PRODUCTS));
+    const [searchTerm, setSearchTerm] = useState('');true);
     const [iscreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState(null);
 
@@ -47,28 +47,31 @@ const ProductList = () => {
                 <div className="bg-gray-100 p-1 rounded-xl flex overflow-x-auto no-scrollbar">
                     <button
                         onClick={() => setActiveTab('products')}
-                        className={`px-6 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'products'
-                            ? 'bg-white text-gray-900 shadow-sm'
-                            : 'text-gray-500 hover:text-gray-700'
-                            }`}
+                        className={`px - 6 py - 2 rounded - lg text - sm font - bold transition - all whitespace - nowrap ${
+    activeTab === 'products'
+    ? 'bg-white text-gray-900 shadow-sm'
+    : 'text-gray-500 hover:text-gray-700'
+} `}
                     >
                         Catálogo
                     </button>
                     <button
                         onClick={() => setActiveTab('supplies')}
-                        className={`px-6 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'supplies'
-                            ? 'bg-white text-gray-900 shadow-sm'
-                            : 'text-gray-500 hover:text-gray-700'
-                            }`}
+                        className={`px - 6 py - 2 rounded - lg text - sm font - bold transition - all whitespace - nowrap ${
+    activeTab === 'supplies'
+    ? 'bg-white text-gray-900 shadow-sm'
+    : 'text-gray-500 hover:text-gray-700'
+} `}
                     >
                         Insumos
                     </button>
                     <button
                         onClick={() => setActiveTab('packaging')}
-                        className={`px-6 py-2 rounded-lg text-sm font-bold transition-all whitespace-nowrap ${activeTab === 'packaging'
-                            ? 'bg-white text-gray-900 shadow-sm'
-                            : 'text-gray-500 hover:text-gray-700'
-                            }`}
+                        className={`px - 6 py - 2 rounded - lg text - sm font - bold transition - all whitespace - nowrap ${
+    activeTab === 'packaging'
+    ? 'bg-white text-gray-900 shadow-sm'
+    : 'text-gray-500 hover:text-gray-700'
+} `}
                     >
                         Empaques
                     </button>
@@ -172,7 +175,7 @@ const ProductCard = ({ product, onEdit, onOpenRecipe }) => (
             </div>
             <div className="flex justify-between items-center text-sm mt-1">
                 <span className="text-gray-500">Margen:</span>
-                <span className={`${(Number(product.sale_price) - Number(product.calculated_cost || 0)) > 0 ? 'text-green-600' : 'text-red-500'} font-bold`}>
+                <span className={`${ (Number(product.sale_price) - Number(product.calculated_cost || 0)) > 0 ? 'text-green-600' : 'text-red-500' } font - bold`}>
                     ${(Number(product.sale_price) - Number(product.calculated_cost || 0)).toFixed(2)}
                 </span>
             </div>
