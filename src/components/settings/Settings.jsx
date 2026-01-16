@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api, supabase } from '../../services/api';
-import { Save, Copy, UserPlus, Trash2 } from 'lucide-react';
+import { Save, Copy, UserPlus, Trash2, Users } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const Settings = () => {
