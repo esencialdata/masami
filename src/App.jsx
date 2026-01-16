@@ -17,7 +17,7 @@ import RegisterScreen from './components/auth/RegisterScreen';
 import SubscriptionGuard from './components/auth/SubscriptionGuard';
 
 function App() {
-  const { user, loading, signOut, isRecoveryFlow, profile, refreshProfile } = useAuth();
+  const { user, loading, signOut, isRecoveryFlow, profile, refreshProfile, authError } = useAuth();
 
   // Local state for UI flow only (not auth state)
   const [showLogin, setShowLogin] = useState(false);
