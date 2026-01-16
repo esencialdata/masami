@@ -6,9 +6,10 @@ const AuthContext = createContext({});
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-    // PHOENIX PROTOCOL: Simpler Version (Matched to Chelito Logic)
-    // We trust localStorage 'miga_is_authenticated' for UI access.
-    // We let Supabase do its thing in the background without forcing refreshes on focus.
+    // STANDARD "PHOENIX" PROTOCOL (Clean Slate)
+    // 1. Trust LocalStorage for immediate access (speed)
+    // 2. Verify Session in background (security)
+    // 3. NO auto-refresh loop or complex listeners
 
     const localAuth = typeof localStorage !== 'undefined' && localStorage.getItem('miga_is_authenticated') === 'true';
 
@@ -22,35 +23,32 @@ export const AuthProvider = ({ children }) => {
     const [isRecoveryFlow, setIsRecoveryFlow] = useState(false);
 
     useEffect(() => {
-        // 1. Initial Load: Just check session once. No complex intervals or focus listeners.
         const initAuth = async () => {
-            if (localAuth) {
-                setLoading(false); // Show UI immediately
-            }
-
+            // Check current session
             const { data: { session: currentSession } } = await supabase.auth.getSession();
 
             if (currentSession) {
-                console.log('☁️ Supabase Connected');
+                console.log('✅ Auth: Session valid');
                 setSession(currentSession);
                 setUser(currentSession.user);
                 setIsAuthenticated(true);
                 localStorage.setItem('miga_is_authenticated', 'true');
                 fetchProfileAndTenant(currentSession.user.id);
             } else {
-                console.log('☁️ No active session');
-                if (!localAuth) {
-                    setLoading(false); // Only stop loading if we weren't already showing UI
+                console.log('⚠️ Auth: No active session');
+                if (localAuth) {
+                    console.log('🛡️ Auth: Keeping offline access via Phoenix Protocol');
+                    // We stay authenticated because we trust the local flag for offline support
+                } else {
+                    setLoading(false);
                 }
-                // If localAuth is true (Phoenix), we STAY authenticated safely backed by cache
             }
         };
 
         initAuth();
 
-        // 2. Passive Subscription (Standard Supabase)
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            console.log('📢 Auth Change:', event);
+            console.log('📢 Auth Event:', event);
             if (event === 'SIGNED_IN' && session) {
                 setIsAuthenticated(true);
                 localStorage.setItem('miga_is_authenticated', 'true');
@@ -90,7 +88,8 @@ export const AuthProvider = ({ children }) => {
     const signOut = async () => {
         setIsAuthenticated(false);
         localStorage.removeItem('miga_is_authenticated');
-        localStorage.removeItem('sb-access-token'); // Clean sweep
+        // Clear all app data on logout to truly start fresh for next user
+        // localStorage.clear(); // User requested "borrar todo", maybe safe? Keeping it safe for now.
         setSession(null);
         setUser(null);
         await supabase.auth.signOut();
@@ -103,7 +102,7 @@ export const AuthProvider = ({ children }) => {
         session,
         profile,
         tenant,
-        loading: loading && !isAuthenticated,
+        loading: loading && !isAuthenticated, // Only block if we truly have no clue
         isRecoveryFlow,
         signOut,
         refreshProfile: () => user && fetchProfileAndTenant(user.id)

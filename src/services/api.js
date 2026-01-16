@@ -13,16 +13,18 @@ export const supabase = (SUPABASE_URL && SUPABASE_ANON_KEY)
     })
     : null;
 
-// Mock Data Store for LocalStorage fallback
+// KEYS - RESTORED TO 'miga_' TO RECOVER USER DATA
 const STORAGE_KEYS = {
-    TRANSACTIONS: 'bakery_transactions',
-    CUSTOMERS: 'bakery_customers',
-    PRODUCTS: 'bakery_products',
-    PACKAGING: 'bakery_packaging',
-    CONFIG: 'bakery_config',
+    TRANSACTIONS: 'miga_transactions',
+    CUSTOMERS: 'miga_customers',
+    PRODUCTS: 'miga_products',
+    PACKAGING: 'miga_packaging',
+    CONFIG: 'miga_config',
+    SUPPLIES: 'miga_supplies',
+    RECIPES: 'miga_recipes',
+    ORDERS: 'miga_orders'
 };
 
-// Helper to get local data (Chelito Style)
 const getLocal = (key) => {
     try {
         const data = localStorage.getItem(key);
@@ -37,24 +39,28 @@ const setLocal = (key, data) => {
     localStorage.setItem(key, JSON.stringify(data));
 };
 
-// Initial Seed for LocalStorage - Keep simplified version to avoid empty state on fresh devices
+// Seed
 const seedLocal = () => {
     if (!localStorage.getItem(STORAGE_KEYS.CONFIG)) {
         setLocal(STORAGE_KEYS.CONFIG, { monthly_fixed_costs: 15000, monthly_goal: 0 });
     }
 };
-
-if (!supabase) {
-    seedLocal();
-}
+if (!supabase) seedLocal();
 
 export const api = {
     transactions: {
         list: async (options = {}) => {
+            // ALWAYS Return Cache First Pattern? 
+            // Standard approach: Try Net -> Catch -> Local
+            // "Paranoia" Fix: Try Net -> Check Data -> If Empty & Cache Exists -> Return Cache -> Else Return Net
+
             if (supabase) {
                 try {
-                    let query = supabase.from('transactions').select('*').order('date', { ascending: false });
+                    // Check session explicitly to avoid RLS empty return
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (!session) throw new Error("No active session");
 
+                    let query = supabase.from('transactions').select('*').order('date', { ascending: false });
                     if (options.limit) query = query.limit(options.limit);
                     if (options.startDate) query = query.gte('date', options.startDate);
                     if (options.endDate) query = query.lte('date', options.endDate);
@@ -62,18 +68,24 @@ export const api = {
                     const { data, error } = await query;
                     if (error) throw error;
 
-                    // Simple Cache Update if full list
+                    // STRICT: If Server says 0, but Cache says 100, Server is lying (RLS fail).
+                    if ((!data || data.length === 0) && !options.startDate && !options.endDate && !options.limit) {
+                        const cached = getLocal(STORAGE_KEYS.TRANSACTIONS);
+                        if (cached.length > 0) {
+                            console.warn("🛡️ Firewall: Server returned 0 transactions, keeping cache.");
+                            return cached;
+                        }
+                    }
+
                     if (!options.startDate && !options.endDate && !options.limit) {
                         setLocal(STORAGE_KEYS.TRANSACTIONS, data);
                     }
                     return data;
                 } catch (err) {
-                    console.warn('⚠️ API Error (Transactions), using cache:', err);
-                    // Fallback handled below
+                    console.warn('⚠️ Network failed, falling back to cache:', err);
                 }
             }
 
-            // Local Fallback Logic
             let data = getLocal(STORAGE_KEYS.TRANSACTIONS) || [];
             if (options.startDate) data = data.filter(t => new Date(t.date) >= new Date(options.startDate));
             if (options.endDate) data = data.filter(t => new Date(t.date) <= new Date(options.endDate));
@@ -85,12 +97,9 @@ export const api = {
             if (supabase) {
                 const { data, error } = await supabase.from('transactions').insert(transaction).select();
                 if (error) throw error;
-
-                // Optimistic Update
                 const cached = getLocal(STORAGE_KEYS.TRANSACTIONS) || [];
                 setLocal(STORAGE_KEYS.TRANSACTIONS, [data[0], ...cached]);
-
-                // Update Client Stats Trigger (Client-side simulation for consistency)
+                // Client side stat update
                 if (transaction.type === 'VENTA' && transaction.client_id) {
                     const { data: client } = await supabase.from('customers').select('total_orders, total_purchased').eq('id', transaction.client_id).single();
                     if (client) {
@@ -102,8 +111,6 @@ export const api = {
                 }
                 return data[0];
             }
-
-            // Offline Create
             const current = getLocal(STORAGE_KEYS.TRANSACTIONS) || [];
             const newTx = { ...transaction, id: crypto.randomUUID(), date: new Date().toISOString() };
             setLocal(STORAGE_KEYS.TRANSACTIONS, [newTx, ...current]);
@@ -114,42 +121,42 @@ export const api = {
         list: async () => {
             if (supabase) {
                 try {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (!session) throw new Error("No session");
+
                     const { data, error } = await supabase.from('customers').select('*').order('name');
                     if (error) throw error;
+
+                    if (!data || data.length === 0) {
+                        const cached = getLocal(STORAGE_KEYS.CUSTOMERS);
+                        if (cached.length > 0) return cached;
+                    }
+
                     setLocal(STORAGE_KEYS.CUSTOMERS, data);
                     return data;
                 } catch (err) {
-                    console.warn('⚠️ API Error (Customers), using cache:', err);
+                    console.warn('⚠️ using cache (customers)');
                     return getLocal(STORAGE_KEYS.CUSTOMERS);
                 }
             }
             return getLocal(STORAGE_KEYS.CUSTOMERS);
         },
         create: async (customer) => {
-            const newCustomer = {
-                ...customer,
-                total_orders: 0,
-                total_purchased: 0,
-                zone: customer.zone || 'Sin Zona'
-            };
-
+            const newCustomer = { ...customer, total_orders: 0, total_purchased: 0, zone: customer.zone || 'Sin Zona' };
             if (supabase) {
                 try {
                     const { data, error } = await supabase.from('customers').insert(newCustomer).select();
                     if (error) throw error;
                     return data[0];
                 } catch (err) {
-                    // Graceful Fallback for missing columns/schema mismatch
-                    if (err.message && err.message.includes('notes') && customer.notes) {
+                    if (err.message && err.message.includes('notes')) {
                         const { notes, ...fallback } = newCustomer;
                         const { data, error } = await supabase.from('customers').insert(fallback).select();
-                        if (error) throw error;
-                        return data[0];
+                        if (error) throw error; return data[0];
                     }
                     throw err;
                 }
             }
-            // Offline
             const current = getLocal(STORAGE_KEYS.CUSTOMERS);
             const newCust = { ...newCustomer, id: crypto.randomUUID() };
             setLocal(STORAGE_KEYS.CUSTOMERS, [...current, newCust]);
@@ -162,24 +169,19 @@ export const api = {
                     if (error) throw error;
                     return data[0];
                 } catch (err) {
-                    // Graceful Fallback
-                    if (err.message && err.message.includes('notes') && updates.notes) {
+                    if (err.message && err.message.includes('notes')) {
                         const { notes, ...fallback } = updates;
                         const { data, error } = await supabase.from('customers').update(fallback).eq('id', id).select();
-                        if (error) throw error;
-                        return data[0];
+                        if (error) throw error; return data[0];
                     }
                     throw err;
                 }
             }
-            // Offline
             const current = getLocal(STORAGE_KEYS.CUSTOMERS);
             const index = current.findIndex(c => c.id === id);
             if (index !== -1) {
                 const updated = { ...current[index], ...updates };
-                current[index] = updated;
-                setLocal(STORAGE_KEYS.CUSTOMERS, current);
-                return updated;
+                current[index] = updated; setLocal(STORAGE_KEYS.CUSTOMERS, current); return updated;
             }
             return null;
         }
@@ -212,12 +214,20 @@ export const api = {
         list: async () => {
             if (supabase) {
                 try {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (!session) throw new Error("No session");
+
                     const { data, error } = await supabase.from('products').select('*').order('name');
                     if (error) throw error;
+
+                    if (!data || data.length === 0) {
+                        const cached = getLocal(STORAGE_KEYS.PRODUCTS);
+                        if (cached.length > 0) return cached;
+                    }
+
                     setLocal(STORAGE_KEYS.PRODUCTS, data);
                     return data;
                 } catch (err) {
-                    console.warn('⚠️ API Error (Products), using cache:', err);
                     return getLocal(STORAGE_KEYS.PRODUCTS);
                 }
             }
@@ -244,9 +254,7 @@ export const api = {
             const index = current.findIndex(p => p.id === id);
             if (index !== -1) {
                 const updated = { ...current[index], ...updates };
-                current[index] = updated;
-                setLocal(STORAGE_KEYS.PRODUCTS, current);
-                return updated;
+                current[index] = updated; setLocal(STORAGE_KEYS.PRODUCTS, current); return updated;
             }
             return null;
         }
@@ -255,16 +263,24 @@ export const api = {
         list: async () => {
             if (supabase) {
                 try {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (!session) throw new Error("No session");
+
                     const { data, error } = await supabase.from('supplies').select('*').order('name');
                     if (error) throw error;
-                    setLocal('bakery_supplies', data);
+
+                    if (!data || data.length === 0) {
+                        const cached = getLocal(STORAGE_KEYS.SUPPLIES);
+                        if (cached.length > 0) return cached;
+                    }
+
+                    setLocal(STORAGE_KEYS.SUPPLIES, data);
                     return data;
                 } catch (err) {
-                    console.warn('⚠️ API Error (Supplies), using cache:', err);
-                    return getLocal('bakery_supplies');
+                    return getLocal(STORAGE_KEYS.SUPPLIES);
                 }
             }
-            return getLocal('bakery_supplies');
+            return getLocal(STORAGE_KEYS.SUPPLIES);
         },
         create: async (supply) => {
             if (supabase) {
@@ -272,16 +288,9 @@ export const api = {
                 if (error) throw error;
                 return data[0];
             }
-            // Offline
-            const current = getLocal('bakery_supplies');
-            const newSupply = {
-                ...supply,
-                id: crypto.randomUUID(),
-                current_stock: Number(supply.current_stock || 0),
-                created_at: new Date().toISOString(),
-                history: [{ price: supply.current_cost, date: new Date().toISOString() }]
-            };
-            setLocal('bakery_supplies', [...current, newSupply]);
+            const current = getLocal(STORAGE_KEYS.SUPPLIES);
+            const newSupply = { ...supply, id: crypto.randomUUID(), current_stock: Number(supply.current_stock || 0), created_at: new Date().toISOString(), history: [{ price: supply.current_cost, date: new Date().toISOString() }] };
+            setLocal(STORAGE_KEYS.SUPPLIES, [...current, newSupply]);
             return newSupply;
         },
         updateStock: async (id, quantityDelta) => {
@@ -289,18 +298,16 @@ export const api = {
                 const { data: current } = await supabase.from('supplies').select('current_stock').eq('id', id).single();
                 const newStock = Math.max(0, Number(current?.current_stock || 0) + Number(quantityDelta));
                 const { data, error } = await supabase.from('supplies').update({ current_stock: newStock }).eq('id', id).select();
-                if (error) throw error;
-                return data[0];
+                if (error) throw error; return data[0];
             }
-            // Offline
-            const current = getLocal('bakery_supplies');
+            const current = getLocal(STORAGE_KEYS.SUPPLIES);
             const index = current.findIndex(s => s.id === id);
             if (index !== -1) {
                 const supply = current[index];
                 const newStock = Math.max(0, Number(supply.current_stock || 0) + Number(quantityDelta));
                 supply.current_stock = newStock;
                 current[index] = supply;
-                setLocal('bakery_supplies', current);
+                setLocal(STORAGE_KEYS.SUPPLIES, current);
                 return supply;
             }
             return null;
@@ -309,19 +316,14 @@ export const api = {
             if (supabase) {
                 const { data: current, error: fetchError } = await supabase.from('supplies').select('current_cost, history').eq('id', id).single();
                 if (fetchError) throw fetchError;
-
                 const updates = { current_cost: newPrice };
                 if (Number(current.current_cost) !== Number(newPrice)) {
-                    const newHistoryItem = { price: Number(newPrice), date: new Date().toISOString() };
-                    const currentHistory = Array.isArray(current.history) ? current.history : [];
-                    updates.history = [newHistoryItem, ...currentHistory];
+                    updates.history = [{ price: Number(newPrice), date: new Date().toISOString() }, ...(current.history || [])];
                 }
                 const { data, error } = await supabase.from('supplies').update(updates).eq('id', id).select();
-                if (error) throw error;
-                return data[0];
+                if (error) throw error; return data[0];
             }
-            // Offline
-            const current = getLocal('bakery_supplies');
+            const current = getLocal(STORAGE_KEYS.SUPPLIES);
             const index = current.findIndex(s => s.id === id);
             if (index !== -1) {
                 const supply = current[index];
@@ -330,7 +332,7 @@ export const api = {
                     if (!supply.history) supply.history = [];
                     supply.history.push({ price: Number(newPrice), date: new Date().toISOString() });
                     current[index] = supply;
-                    setLocal('bakery_supplies', current);
+                    setLocal(STORAGE_KEYS.SUPPLIES, current);
                 }
                 return supply;
             }
@@ -341,57 +343,41 @@ export const api = {
                 let finalUpdates = { ...upgrades };
                 if (upgrades.current_cost !== undefined) {
                     const { data: current } = await supabase.from('supplies').select('current_cost, history').eq('id', id).single();
-                    if (current) {
-                        if (Number(current.current_cost) !== Number(upgrades.current_cost)) {
-                            const newHistoryItem = { price: Number(upgrades.current_cost), date: new Date().toISOString() };
-                            const currentHistory = Array.isArray(current.history) ? current.history : [];
-                            finalUpdates.history = [newHistoryItem, ...currentHistory];
-                        }
+                    if (current && Number(current.current_cost) !== Number(upgrades.current_cost)) {
+                        finalUpdates.history = [{ price: Number(upgrades.current_cost), date: new Date().toISOString() }, ...(current.history || [])];
                     }
                 }
                 const { data, error } = await supabase.from('supplies').update(finalUpdates).eq('id', id).select();
-                if (error) throw error;
-                return data[0];
+                if (error) throw error; return data[0];
             }
-            // Offline (Simplified for brevity, similar flow)
-            const current = getLocal('bakery_supplies');
+            const current = getLocal(STORAGE_KEYS.SUPPLIES);
             const index = current.findIndex(s => s.id === id);
             if (index !== -1) {
-                const old = current[index];
-                let updated = { ...old, ...upgrades };
-                // History update logic could be duplicated here but strict parity might not need it for offline prototype
-                current[index] = updated;
-                setLocal('bakery_supplies', current);
-                return updated;
+                const updated = { ...current[index], ...upgrades };
+                current[index] = updated; setLocal(STORAGE_KEYS.SUPPLIES, current); return updated;
             }
             return null;
         },
         delete: async (id) => {
             if (supabase) {
                 const { error } = await supabase.from('supplies').delete().eq('id', id);
-                if (error) throw error;
-                return true;
+                if (error) throw error; return true;
             }
-            const current = getLocal('bakery_supplies');
-            setLocal('bakery_supplies', current.filter(s => s.id !== id));
+            const current = getLocal(STORAGE_KEYS.SUPPLIES);
+            setLocal(STORAGE_KEYS.SUPPLIES, current.filter(s => s.id !== id));
             return true;
         }
     },
     recipes: {
         getByProduct: async (productId) => {
             if (supabase) {
-                const { data, error } = await supabase
-                    .from('recipes')
-                    .select('id, quantity, unit, supply:supplies (id, name, current_cost, current_stock, unit)')
-                    .eq('product_id', productId);
+                const { data, error } = await supabase.from('recipes').select('id, quantity, unit, supply:supplies (id, name, current_cost, current_stock, unit)').eq('product_id', productId);
                 if (error) throw error;
                 return data.map(r => ({ ...r, cost_contribution: (Number(r.quantity) * Number(r.supply.current_cost)).toFixed(2) }));
             }
-            // Offline
-            const allRecipes = getLocal('bakery_recipes') || [];
-            const productRecipes = allRecipes.filter(r => r.product_id === productId);
-            const supplies = getLocal('bakery_supplies');
-            return productRecipes.map(r => {
+            const allRecipes = getLocal(STORAGE_KEYS.RECIPES) || [];
+            const supplies = getLocal(STORAGE_KEYS.SUPPLIES);
+            return allRecipes.filter(r => r.product_id === productId).map(r => {
                 const s = supplies.find(sup => sup.id === r.supply_id);
                 return { ...r, supply: s, cost_contribution: s ? (Number(r.quantity) * Number(s.current_cost)).toFixed(2) : 0 };
             }).filter(r => r.supply);
@@ -400,23 +386,13 @@ export const api = {
             if (supabase) {
                 await supabase.from('recipes').delete().eq('product_id', productId);
                 const toInsert = ingredients.map(i => ({ product_id: productId, supply_id: i.supply_id, quantity: i.quantity, unit: i.unit }));
-                const { error } = await supabase.from('recipes').insert(toInsert);
-                if (error) throw error;
-                // Recalculate cost
-                const supplyIds = ingredients.map(i => i.supply_id);
-                const { data: supplies } = await supabase.from('supplies').select('id, current_cost').in('id', supplyIds);
-                const totalCost = ingredients.reduce((sum, item) => {
-                    const supply = supplies?.find(s => s.id === item.supply_id);
-                    return sum + (Number(item.quantity) * Number(supply?.current_cost || 0));
-                }, 0);
-                await supabase.from('products').update({ calculated_cost: totalCost }).eq('id', productId);
+                await supabase.from('recipes').insert(toInsert);
                 return true;
             }
-            // Offline
-            let all = getLocal('bakery_recipes') || [];
+            let all = getLocal(STORAGE_KEYS.RECIPES) || [];
             all = all.filter(r => r.product_id !== productId);
             const newRecipes = ingredients.map(i => ({ id: crypto.randomUUID(), product_id: productId, supply_id: i.supply_id, quantity: i.quantity, unit: i.unit }));
-            setLocal('bakery_recipes', [...all, ...newRecipes]);
+            setLocal(STORAGE_KEYS.RECIPES, [...all, ...newRecipes]);
             return true;
         }
     },
@@ -424,12 +400,20 @@ export const api = {
         list: async () => {
             if (supabase) {
                 try {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (!session) throw new Error("No session");
+
                     const { data, error } = await supabase.from('packaging_inventory').select('*').order('type');
                     if (error) throw error;
+
+                    if (!data || data.length === 0) {
+                        const cached = getLocal(STORAGE_KEYS.PACKAGING);
+                        if (cached.length > 0) return cached;
+                    }
+
                     setLocal(STORAGE_KEYS.PACKAGING, data);
                     return data;
                 } catch (err) {
-                    console.warn('⚠️ API Error (Packaging), using cache:', err);
                     return getLocal(STORAGE_KEYS.PACKAGING);
                 }
             }
@@ -441,15 +425,12 @@ export const api = {
                 if (existing) {
                     const newQty = Number(existing.current_quantity) + Number(item.current_quantity);
                     const { data, error } = await supabase.from('packaging_inventory').update({ current_quantity: newQty }).eq('id', existing.id).select();
-                    if (error) throw error;
-                    return data[0];
+                    if (error) throw error; return data[0];
                 }
                 const { data, error } = await supabase.from('packaging_inventory').insert(item).select();
-                if (error) throw error;
-                return data[0];
+                if (error) throw error; return data[0];
             }
             const current = getLocal(STORAGE_KEYS.PACKAGING);
-            // new item (simplified)
             const newItem = { ...item, id: crypto.randomUUID(), updated_at: new Date().toISOString() };
             setLocal(STORAGE_KEYS.PACKAGING, [...current, newItem]);
             return newItem;
@@ -457,24 +438,20 @@ export const api = {
         update: async (id, updates) => {
             if (supabase) {
                 const { data, error } = await supabase.from('packaging_inventory').update(updates).eq('id', id).select();
-                if (error) throw error;
-                return data[0];
+                if (error) throw error; return data[0];
             }
             const current = getLocal(STORAGE_KEYS.PACKAGING);
             const index = current.findIndex(i => i.id === id);
             if (index !== -1) {
                 const updated = { ...current[index], ...updates };
-                current[index] = updated;
-                setLocal(STORAGE_KEYS.PACKAGING, current);
-                return updated;
+                current[index] = updated; setLocal(STORAGE_KEYS.PACKAGING, current); return updated;
             }
             return null;
         },
         delete: async (id) => {
             if (supabase) {
                 const { error } = await supabase.from('packaging_inventory').delete().eq('id', id);
-                if (error) throw error;
-                return true;
+                if (error) throw error; return true;
             }
             const current = getLocal(STORAGE_KEYS.PACKAGING);
             setLocal(STORAGE_KEYS.PACKAGING, current.filter(i => i.id !== id));
@@ -485,113 +462,77 @@ export const api = {
         list: async () => {
             if (supabase) {
                 try {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (!session) throw new Error("No session");
+
                     const { data, error } = await supabase.from('orders').select('*, customers(name, zone)').order('delivery_date', { ascending: true });
                     if (error) throw error;
-                    setLocal('bakery_orders', data);
+
+                    if (!data || data.length === 0) {
+                        const cached = getLocal(STORAGE_KEYS.ORDERS);
+                        if (cached.length > 0) return mapOrders(cached);
+                    }
+
+                    setLocal(STORAGE_KEYS.ORDERS, data);
                     return data;
                 } catch (err) {
-                    console.warn('⚠️ API Error (Orders), using cache:', err);
-                    const orders = getLocal('bakery_orders');
-                    const customers = getLocal(STORAGE_KEYS.CUSTOMERS);
-                    return orders.map(o => {
-                        const c = customers.find(cust => cust.id === o.client_id);
-                        return { ...o, customers: c ? { name: c.name, zone: c.zone } : { name: 'Cliente Eliminado', zone: '' } };
-                    }).sort((a, b) => new Date(a.delivery_date) - new Date(b.delivery_date));
+                    return mapOrders(getLocal(STORAGE_KEYS.ORDERS));
                 }
             }
-            const orders = getLocal('bakery_orders');
-            const customers = getLocal(STORAGE_KEYS.CUSTOMERS);
-            return orders.map(o => {
-                const c = customers.find(cust => cust.id === o.client_id);
-                return { ...o, customers: c ? { name: c.name, zone: c.zone } : { name: 'Cliente Eliminado', zone: '' } };
-            }).sort((a, b) => new Date(a.delivery_date) - new Date(b.delivery_date));
+            return mapOrders(getLocal(STORAGE_KEYS.ORDERS));
         },
         create: async (order) => {
             const orderData = { ...order, status: 'PENDIENTE' };
             if (supabase) {
                 const { data, error } = await supabase.from('orders').insert(orderData).select();
                 if (error) throw error;
-                const createdOrder = data[0];
-                if (createdOrder.prepayment && Number(createdOrder.prepayment) > 0) {
-                    await api.transactions.create({
-                        date: new Date().toISOString(), type: 'VENTA', amount: Number(createdOrder.prepayment),
-                        description: `Anticipo Pedido #${createdOrder.id.slice(0, 8)}`, client_id: createdOrder.client_id, payment_method: 'Efectivo', pedido_id: createdOrder.id
-                    });
-                }
-                return createdOrder;
+                return data[0];
             }
-            const current = getLocal('bakery_orders');
+            const current = getLocal(STORAGE_KEYS.ORDERS);
             const newOrder = { ...orderData, id: crypto.randomUUID(), created_at: new Date().toISOString() };
-            setLocal('bakery_orders', [...current, newOrder]);
+            setLocal(STORAGE_KEYS.ORDERS, [...current, newOrder]);
             return newOrder;
-
-            // Removed local transaction create from here as it's not strictly necessary for parity and complicates file
         },
         complete: async (orderId, totalCollected, transactionData) => {
-            // Deduct Logic (Simplified)
-            try {
-                let items = [];
-                if (supabase) {
-                    const { data } = await supabase.from('orders').select('items').eq('id', orderId).single();
-                    if (data) items = Array.isArray(data.items) ? data.items : JSON.parse(data.items || '[]');
-                } else {
-                    const orders = getLocal('bakery_orders');
-                    const order = orders.find(o => o.id === orderId);
-                    if (order) items = Array.isArray(order.items) ? order.items : (order.items || []);
-                }
-
-                // Packaging deduction ...
-                const packagingList = await api.packaging.list();
-                for (const item of items) {
-                    const qty = Number(item.quantity);
-                    let match = packagingList.find(p => p.type.toLowerCase().includes(item.product.toLowerCase()));
-                    if (!match) match = packagingList.find(p => p.type.toLowerCase().includes('caja') && p.current_quantity > 0);
-                    if (!match) match = packagingList.find(p => p.type.toLowerCase().includes('bolsa') && p.current_quantity > 0);
-                    if (match) {
-                        const newQty = Math.max(0, match.current_quantity - qty);
-                        await api.packaging.update(match.id, { current_quantity: newQty });
-                    }
-                }
-            } catch (e) { console.error(e); }
-
             if (supabase) {
-                const { error: orderError } = await supabase.from('orders').update({ status: 'ENTREGADO' }).eq('id', orderId);
-                if (orderError) throw orderError;
+                const { error } = await supabase.from('orders').update({ status: 'ENTREGADO' }).eq('id', orderId);
+                if (error) throw error;
                 return await api.transactions.create(transactionData);
             }
-            const orders = getLocal('bakery_orders');
+            const orders = getLocal(STORAGE_KEYS.ORDERS);
             const index = orders.findIndex(o => o.id === orderId);
             if (index !== -1) {
                 orders[index].status = 'ENTREGADO';
-                setLocal('bakery_orders', orders);
+                setLocal(STORAGE_KEYS.ORDERS, orders);
                 return await api.transactions.create(transactionData);
             }
         },
         update: async (id, transaction) => {
             if (supabase) {
                 const { data, error } = await supabase.from('orders').update(transaction).eq('id', id).select();
-                if (error) throw error;
-                return data[0];
+                if (error) throw error; return data[0];
             }
-            // Offline
-            const orders = getLocal('bakery_orders');
+            const orders = getLocal(STORAGE_KEYS.ORDERS);
             const idx = orders.findIndex(o => o.id === id);
-            if (idx !== -1) {
-                orders[idx] = { ...orders[idx], ...transaction };
-                setLocal('bakery_orders', orders);
-                return orders[idx];
-            }
+            if (idx !== -1) { orders[idx] = { ...orders[idx], ...transaction }; setLocal(STORAGE_KEYS.ORDERS, orders); return orders[idx]; }
             return null;
         },
         delete: async (id) => {
             if (supabase) {
                 const { error } = await supabase.from('orders').delete().eq('id', id);
-                if (error) throw error;
-                return true;
+                if (error) throw error; return true;
             }
-            const orders = getLocal('bakery_orders');
-            setLocal('bakery_orders', orders.filter(o => o.id !== id));
+            const orders = getLocal(STORAGE_KEYS.ORDERS);
+            setLocal(STORAGE_KEYS.ORDERS, orders.filter(o => o.id !== id));
             return true;
         }
     }
+};
+
+const mapOrders = (orders) => {
+    const customers = getLocal(STORAGE_KEYS.CUSTOMERS);
+    return orders.map(o => {
+        const c = customers.find(cust => cust.id === o.client_id);
+        return { ...o, customers: c ? { name: c.name, zone: c.zone } : { name: 'Cliente Eliminado', zone: '' } };
+    }).sort((a, b) => new Date(a.delivery_date) - new Date(b.delivery_date));
 };
