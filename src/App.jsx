@@ -12,6 +12,9 @@ import ReportsView from './components/reports/ReportsView';
 
 import LandingPage from './components/landing/LandingPage';
 import ResetPasswordScreen from './components/auth/ResetPasswordScreen';
+import LoginScreen from './components/auth/LoginScreen';
+import RegisterScreen from './components/auth/RegisterScreen';
+import SubscriptionGuard from './components/auth/SubscriptionGuard';
 
 function App() {
   const { user, loading, signOut, isRecoveryFlow, profile, refreshProfile } = useAuth();
