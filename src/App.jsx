@@ -69,8 +69,8 @@ function App() {
           onBack={() => setShowLogin(false)}
           onRegister={() => { setShowLogin(false); setShowRegister(true); }}
           onLogin={() => {
-            // Force navigation to root to ensure fresh session state
-            window.location.href = '/';
+            // rely on reactive auth state change
+            // window.location.href = '/'; 
           }}
         />
       );
