@@ -23,7 +23,13 @@ export default function LoginScreen({ onLogin, onBack, onRegister }) {
             // Success handler usually managed by AuthContext via onAuthStateChange
             // But we can trigger a UI feedback or just wait for App to re-render
             // onLogin can be used for UI transitions if needed, though App usually handles it via `user` check
-            if (onLogin) onLogin();
+            // Success handler
+            if (onLogin) {
+                onLogin();
+            } else {
+                // Fallback: If App doesn't unmount us, force reload to pick up session
+                window.location.reload();
+            }
 
         } catch (err) {
             console.error('Login error:', err);
@@ -112,6 +118,28 @@ export default function LoginScreen({ onLogin, onBack, onRegister }) {
                     >
                         {loading ? 'Iniciando...' : 'Entrar'}
                     </button>
+
+                    <div className="flex justify-center mt-2">
+                        <button
+                            type="button"
+                            onClick={async () => {
+                                if (!email) {
+                                    setError('Escribe tu correo primero para resetear la contraseña.');
+                                    return;
+                                }
+                                setLoading(true);
+                                const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+                                    redirectTo: window.location.origin,
+                                });
+                                setLoading(false);
+                                if (resetError) setError(resetError.message);
+                                else setError('Correo de recuperación enviado.');
+                            }}
+                            className="text-xs text-brand-coffee/50 hover:text-brand-gold transition-colors"
+                        >
+                            ¿Olvidaste tu contraseña?
+                        </button>
+                    </div>
                 </form>
 
                 <div className="mt-8 text-center pt-6 border-t border-brand-coffee/5">
