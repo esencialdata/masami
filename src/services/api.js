@@ -102,10 +102,15 @@ export const api = {
 
                 const { data, error } = await withTimeout(query);
                 if (error) throw error;
+
+                // Cache full list only if no filters applied (simple heuristic)
+                if (!options.startDate && !options.endDate && !options.limit) {
+                    setLocal(STORAGE_KEYS.TRANSACTIONS, data);
+                }
                 return data;
             }
             // Local fallback
-            let data = getLocal(STORAGE_KEYS.TRANSACTIONS);
+            let data = getLocal(STORAGE_KEYS.TRANSACTIONS) || [];
             if (options.startDate) data = data.filter(t => new Date(t.date) >= new Date(options.startDate));
             if (options.endDate) data = data.filter(t => new Date(t.date) <= new Date(options.endDate));
             data.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -116,6 +121,10 @@ export const api = {
             if (supabase) {
                 const { data, error } = await supabase.from('transactions').insert(transaction).select();
                 if (error) throw error;
+                // Optimistic Cache Update
+                const cached = getLocal(STORAGE_KEYS.TRANSACTIONS) || [];
+                setLocal(STORAGE_KEYS.TRANSACTIONS, [data[0], ...cached]);
+
                 // Trigger: Update client stats if sale
                 if (transaction.type === 'VENTA' && transaction.client_id) {
                     const { data: client } = await supabase.from('customers').select('total_orders, total_purchased').eq('id', transaction.client_id).single();
@@ -128,7 +137,7 @@ export const api = {
                 }
                 return data[0];
             }
-            const current = getLocal(STORAGE_KEYS.TRANSACTIONS);
+            const current = getLocal(STORAGE_KEYS.TRANSACTIONS) || [];
             const newTx = { ...transaction, id: crypto.randomUUID(), date: new Date().toISOString() };
             setLocal(STORAGE_KEYS.TRANSACTIONS, [newTx, ...current]);
 
@@ -151,6 +160,7 @@ export const api = {
             if (supabase) {
                 const { data, error } = await withTimeout(supabase.from('customers').select('*').order('name'));
                 if (error) throw error;
+                setLocal(STORAGE_KEYS.CUSTOMERS, data); // CACHE UPDATE
                 return data;
             }
             return getLocal(STORAGE_KEYS.CUSTOMERS);
@@ -217,6 +227,7 @@ export const api = {
             if (supabase) {
                 const { data, error } = await withTimeout(supabase.from('configuration').select('*').single());
                 if (error) return { monthly_fixed_costs: 15000 };
+                setLocal(STORAGE_KEYS.CONFIG, data); // CACHE UPDATE
                 return data;
             }
             return getLocal(STORAGE_KEYS.CONFIG);
@@ -236,6 +247,7 @@ export const api = {
             if (supabase) {
                 const { data, error } = await withTimeout(supabase.from('products').select('*').order('name'));
                 if (error) throw error;
+                setLocal(STORAGE_KEYS.PRODUCTS, data); // CACHE UPDATE
                 return data;
             }
             return getLocal(STORAGE_KEYS.PRODUCTS);
@@ -273,6 +285,7 @@ export const api = {
             if (supabase) {
                 const { data, error } = await withTimeout(supabase.from('supplies').select('*').order('name'));
                 if (error) throw error;
+                setLocal('bakery_supplies', data); // CACHE UPDATE
                 return data;
             }
             return getLocal('bakery_supplies');
@@ -528,6 +541,7 @@ export const api = {
             if (supabase) {
                 const { data, error } = await withTimeout(supabase.from('packaging_inventory').select('*').order('type'));
                 if (error) throw error;
+                setLocal(STORAGE_KEYS.PACKAGING, data); // CACHE UPDATE
                 return data;
             }
             return getLocal(STORAGE_KEYS.PACKAGING);
@@ -606,6 +620,7 @@ export const api = {
             if (supabase) {
                 const { data, error } = await withTimeout(supabase.from('orders').select('*, customers(name, zone)').order('delivery_date', { ascending: true }));
                 if (error) throw error;
+                setLocal('bakery_orders', data); // CACHE UPDATE
                 return data;
             }
             const orders = getLocal('bakery_orders');

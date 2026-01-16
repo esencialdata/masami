@@ -1,20 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { api } from '../../services/api';
+import { api, getLocal } from '../../services/api';
 import { Plus, Package, TrendingUp, TrendingDown, Minus, Layers, Pencil } from 'lucide-react';
 import Modal from '../ui/Modal';
 import WasteReportModal from './WasteReportModal';
 
 
 const SupplyList = () => {
-    const [supplies, setSupplies] = useState([]);
+    // SWR Strategy: Init with cache, then fetch fresh
+    const [supplies, setSupplies] = useState(() => getLocal('bakery_supplies') || []);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isAdjustModalOpen, setIsAdjustModalOpen] = useState(false);
     const [isWasteModalOpen, setIsWasteModalOpen] = useState(false);
     const [selectedSupply, setSelectedSupply] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(() => !getLocal('bakery_supplies')); // Only loading if no cache
 
     const loadSupplies = async () => {
         try {
+            // Background update
             const data = await api.supplies.list();
             setSupplies(data);
         } catch (e) {
