@@ -29,6 +29,44 @@ function App() {
     setLastUpdated(Date.now());
   };
 
+  // Password Recovery State
+  const [isRecoveryMode, setIsRecoveryMode] = useState(false);
+
+  React.useEffect(() => {
+    import('./services/api').then(({ supabase }) => {
+      supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === "PASSWORD_RECOVERY") {
+          setIsRecoveryMode(true);
+        }
+      });
+    });
+  }, []);
+
+  if (isRecoveryMode) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-brand-cream p-4">
+        <div className="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full border border-brand-coffee/10">
+          <h2 className="text-2xl font-bold text-brand-coffee mb-4">Actualizar Contraseña</h2>
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            const password = e.target.password.value;
+            const { error } = await import('./services/api').then(m => m.supabase.auth.updateUser({ password }));
+            if (!error) {
+              alert('Contraseña actualizada. Ahora entrarás al sistema.');
+              setIsRecoveryMode(false);
+              window.location.href = '/';
+            } else {
+              alert('Error: ' + error.message);
+            }
+          }}>
+            <input name="password" type="password" placeholder="Nueva Contraseña" required className="w-full px-4 py-3 rounded-xl border mb-4" />
+            <button type="submit" className="w-full bg-brand-gold text-white font-bold py-3 rounded-xl">Guardar Nueva Contraseña</button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   // Failsafe: User Authenticated but No Profile (Trigger failed)
   const [setupError, setSetupError] = useState(null);
   const [isSettingUp, setIsSettingUp] = useState(false);
@@ -53,6 +91,10 @@ function App() {
         <LoginScreen
           onBack={() => setShowLogin(false)}
           onRegister={() => { setShowLogin(false); setShowRegister(true); }}
+          onLogin={() => {
+            // Force navigation to root to ensure fresh session state
+            window.location.href = '/';
+          }}
         />
       );
     }

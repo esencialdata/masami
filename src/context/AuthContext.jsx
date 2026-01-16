@@ -14,12 +14,25 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         // 1. Check active session
+        // Only set loading false if NO hash is present (handling redirect/recovery)
+        const isRedirect = window.location.hash && (
+            window.location.hash.includes('access_token') ||
+            window.location.hash.includes('error') ||
+            window.location.hash.includes('type=recovery')
+        );
+
+        if (isRedirect) {
+            // Let onAuthStateChange handle it
+            console.log('Auth redirect detected, waiting for event...');
+        }
+
         supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session);
             setUser(session?.user ?? null);
             if (session?.user) {
                 fetchProfileAndTenant(session.user.id);
-            } else {
+            } else if (!isRedirect) {
+                // Only stop loading if we aren't waiting for a redirect hash to process
                 setLoading(false);
             }
         });
