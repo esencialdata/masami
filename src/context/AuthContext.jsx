@@ -12,6 +12,7 @@ export const AuthProvider = ({ children }) => {
     const [profile, setProfile] = useState(null);
     const [tenant, setTenant] = useState(null);
     const [authError, setAuthError] = useState(null);
+    const [isRecoveryFlow, setIsRecoveryFlow] = useState(false);
 
     useEffect(() => {
         // 1. Check active session
