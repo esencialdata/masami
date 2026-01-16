@@ -90,10 +90,32 @@ const withTimeout = (promise, ms = 10000) => {
     });
 };
 
+// Helper to safely get session before request
+const getSessionSafe = async () => {
+    try {
+        const { data: { session } } = await supabase.auth.getSession();
+        return session;
+    } catch {
+        return null;
+    }
+};
+
 export const api = {
     transactions: {
         list: async (options = {}) => {
             if (supabase) {
+                // SESSION GUARD: Don't fetch if not actually logged in (prevents RLS empty list wipe)
+                const session = await getSessionSafe();
+                if (!session) {
+                    console.warn('🛑 API: No session active. Returning cache to protect data.');
+                    let data = getLocal(STORAGE_KEYS.TRANSACTIONS) || [];
+                    if (options.startDate) data = data.filter(t => new Date(t.date) >= new Date(options.startDate));
+                    if (options.endDate) data = data.filter(t => new Date(t.date) <= new Date(options.endDate));
+                    data.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    if (options.limit) data = data.slice(0, options.limit);
+                    return data;
+                }
+
                 try {
                     let query = supabase.from('transactions').select('*').order('date', { ascending: false });
 
@@ -124,6 +146,8 @@ export const api = {
         },
         create: async (transaction) => {
             if (supabase) {
+                // Ensure session for writes too
+                await getSessionSafe();
                 const { data, error } = await supabase.from('transactions').insert(transaction).select();
                 if (error) throw error;
                 // Optimistic Cache Update
@@ -163,6 +187,13 @@ export const api = {
     customers: {
         list: async () => {
             if (supabase) {
+                // SESSION GUARD
+                const session = await getSessionSafe();
+                if (!session) {
+                    console.warn('🛑 API: No session. Returning Customers cache.');
+                    return getLocal(STORAGE_KEYS.CUSTOMERS);
+                }
+
                 try {
                     const { data, error } = await withTimeout(supabase.from('customers').select('*').order('name'));
                     if (error) throw error;
@@ -235,6 +266,12 @@ export const api = {
     config: {
         get: async () => {
             if (supabase) {
+                // SESSION GUARD
+                const session = await getSessionSafe();
+                if (!session) {
+                    return getLocal(STORAGE_KEYS.CONFIG) || { monthly_fixed_costs: 15000 };
+                }
+
                 try {
                     const { data, error } = await withTimeout(supabase.from('configuration').select('*').single());
                     if (error) throw error; // Go to catch
@@ -260,6 +297,13 @@ export const api = {
     products: {
         list: async () => {
             if (supabase) {
+                // SESSION GUARD
+                const session = await getSessionSafe();
+                if (!session) {
+                    console.warn('🛑 API: No session (Products). Returning cache.');
+                    return getLocal(STORAGE_KEYS.PRODUCTS);
+                }
+
                 try {
                     const { data, error } = await withTimeout(supabase.from('products').select('*').order('name'));
                     if (error) throw error;
@@ -303,6 +347,13 @@ export const api = {
     supplies: {
         list: async () => {
             if (supabase) {
+                // SESSION GUARD
+                const session = await getSessionSafe();
+                if (!session) {
+                    console.warn('🛑 API: No session (Supplies). Returning cache.');
+                    return getLocal('bakery_supplies');
+                }
+
                 try {
                     const { data, error } = await withTimeout(supabase.from('supplies').select('*').order('name'));
                     if (error) throw error;
@@ -564,6 +615,13 @@ export const api = {
     packaging: {
         list: async () => {
             if (supabase) {
+                // SESSION GUARD
+                const session = await getSessionSafe();
+                if (!session) {
+                    console.warn('🛑 API: No session (Packaging). Returning cache.');
+                    return getLocal(STORAGE_KEYS.PACKAGING);
+                }
+
                 try {
                     const { data, error } = await withTimeout(supabase.from('packaging_inventory').select('*').order('type'));
                     if (error) throw error;
@@ -648,6 +706,18 @@ export const api = {
     orders: {
         list: async () => {
             if (supabase) {
+                // SESSION GUARD
+                const session = await getSessionSafe();
+                if (!session) {
+                    console.warn('🛑 API: No session (Orders). Returning cache.');
+                    const orders = getLocal('bakery_orders');
+                    const customers = getLocal(STORAGE_KEYS.CUSTOMERS);
+                    return orders.map(o => {
+                        const c = customers.find(cust => cust.id === o.client_id);
+                        return { ...o, customers: c ? { name: c.name, zone: c.zone } : { name: 'Cliente Eliminado', zone: '' } };
+                    }).sort((a, b) => new Date(a.delivery_date) - new Date(b.delivery_date));
+                }
+
                 try {
                     const { data, error } = await withTimeout(supabase.from('orders').select('*, customers(name, zone)').order('delivery_date', { ascending: true }));
                     if (error) throw error;
