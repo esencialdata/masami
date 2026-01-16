@@ -6,19 +6,25 @@ const AuthContext = createContext({});
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
+    // 1. Optimistic Init (Check LocalStorage synchronously)
+    // Supabase keys are usually `sb-<projectRef>-auth-token`
+    // We can't know the project ref easily here without parsing URL/Env, but we can check if we have ANY session in memory
+    // Actually, simply defaulting 'loading' to false if we suspect we are logged in from a previous run is safer.
+    // Better strategy: "Assume logged in" if we find our custom cache keys? No, strictly auth.
+    // Let's use a heuristic: Default loading to TRUE only if NO local storage keys exist at all?
+    // Safer: Just run getSession but DO NOT block the UI if it hangs.
+
     const [user, setUser] = useState(null);
     const [session, setSession] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true); // Will attempt to unblock fast
     const [profile, setProfile] = useState(null);
     const [tenant, setTenant] = useState(null);
     const [authError, setAuthError] = useState(null);
     const [isRecoveryFlow, setIsRecoveryFlow] = useState(false);
 
     useEffect(() => {
-        // 1. Check active session
         const hash = window.location.hash;
         const search = window.location.search;
-
         const isRedirect = (hash && (
             hash.includes('access_token') ||
             hash.includes('type=recovery') ||
@@ -26,45 +32,43 @@ export const AuthProvider = ({ children }) => {
             hash.includes('type=invite')
         )) || (search && search.includes('code='));
 
-        // Handle OTP Errors specially
+        // Handle OTP Errors
         if (hash && hash.includes('error=')) {
-            const params = new URLSearchParams(hash.substring(1)); // remove #
-            const errCode = params.get('error_code');
-            const errMsg = params.get('error_description')?.replace(/\+/g, ' ');
-
-            console.warn('🚨 Auth Redirect Error:', errCode, errMsg);
-            setAuthError(errMsg);
-            setLoading(false); // Stop loading to show error
+            const params = new URLSearchParams(hash.substring(1));
+            setAuthError(params.get('error_description')?.replace(/\+/g, ' '));
+            setLoading(false);
             return;
         }
 
-        if (isRedirect) {
-            console.log('Auth redirect detected, waiting for event...');
-            // Force a session check after a delay if redirect event doesn't fire
-            setTimeout(() => {
-                supabase.auth.getSession().then(({ data: { session } }) => {
-                    if (session) {
-                        console.log('✅ Recovered session after redirect delay');
-                        setSession(session);
-                        setUser(session.user);
-                        fetchProfileAndTenant(session.user.id);
-                    }
-                });
-            }, 2000);
-        }
+        console.log('🔍 Initializing Auth (Optimistic)...');
 
-        console.log('🔍 Initializing Auth Context...');
-
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            console.log('🔍 Initial getSession result:', session ? 'FOUND' : 'NULL');
-            setSession(session);
-            setUser(session?.user ?? null);
-            if (session?.user) {
-                fetchProfileAndTenant(session.user.id);
-            } else if (!isRedirect) {
+        // KEY CHANGE: Race Condition Breaker
+        // If Supabase takes > 1s, just assume we might be offline and let the app render (if we have cached data).
+        // If we really aren't logged in, ProtectedRoute will catch it later or data wont load (but cached data WILL show).
+        const fallbackTimer = setTimeout(() => {
+            if (loading) {
+                console.log('⚠️ Auth check slow - Unblocking UI (Optimistic Render)');
                 setLoading(false);
             }
+        }, 800);
+
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            clearTimeout(fallbackTimer);
+            console.log('Session Check Result:', session?.user?.id || 'No User');
+
+            if (session) {
+                setSession(session);
+                setUser(session.user);
+                fetchProfileAndTenant(session.user.id); // This is async, don't wait for it to stop loading
+            }
+
+            // Only stop loading if we haven't already forced it via timeout
+            setLoading(false);
+        }).catch(err => {
+            console.error("Auth Exception:", err);
+            setLoading(false);
         });
+
 
         // 2. Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
