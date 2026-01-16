@@ -3,7 +3,7 @@ import { supabase } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 
 export default function LoginScreen({ onLogin, onBack, onRegister }) {
-    const { loginManual } = useAuth();
+    // const { loginManual } = useAuth(); // REMOVED: No longer needed with Optimistic Auth
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -22,39 +22,21 @@ export default function LoginScreen({ onLogin, onBack, onRegister }) {
 
             if (error) throw error;
 
-            // Success Handler
-            console.log('Login successful. Full Data:', data);
+            console.log('Login successful');
 
             if (!data?.user) {
-                console.error('CRITICAL: Login returned no error but no user!', data);
                 throw new Error('Login incompleto: No se recibió sesión de usuario.');
             }
 
-            // alert('LOGIN OK [v2.2-FIXED]! User ID: ' + data.user.id);
             setError(null);
-            setLoading(true);
 
-            if (onLogin) onLogin();
-
-            // Manual Hydration (Fix for race condition/missing listener event)
-            if (data.session) {
-                console.log('🚀 Attempting Manual Login with session:', data.session.access_token?.slice(0, 10) + '...');
-                try {
-                    await loginManual(data.session);
-                    console.log('✅ Manual Login Function Completed');
-                } catch (manualErr) {
-                    console.error('💥 Manual Login Failed:', manualErr);
-                    setError('Error al iniciar sesión. Intenta recargar.');
-                }
-            } else {
-                console.warn('⚠️ No session provided in login response');
-            }
+            // PHOENIX FIX: Set the flag explicitly
+            localStorage.setItem('miga_is_authenticated', 'true');
 
             if (onLogin) onLogin();
 
         } catch (err) {
             console.error('Login error:', err);
-            // Show specific error for debugging (translate common ones)
             let msg = 'Credenciales incorrectas o usuario no encontrado.';
             if (err.message.includes('Email not confirmed')) msg = 'Por favor confirma tu correo electrónico.';
             if (err.message.includes('Invalid login credentials')) msg = 'Correo o contraseña incorrectos.';
