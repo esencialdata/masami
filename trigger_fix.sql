@@ -1,7 +1,10 @@
--- Trigger-based User/Tenant Creation Script
--- Copy and Run this in Supabase SQL Editor
+-- Trigger-based User/Tenant Creation Script (v2 - Robust)
+-- Copy and Run this in Supabase SQL Editor (SQL Query)
 
--- 1. Create a function to seed data (Optional but keeps the trigger clean)
+-- 0. Ensure UUID extension
+create extension if not exists "uuid-ossp";
+
+-- 1. Create a function to seed data (Security Definer to bypass any RLS on supplies)
 create or replace function public.seed_tenant_data(target_tenant_id uuid)
 returns void as $$
 begin
@@ -27,7 +30,7 @@ begin
     (target_tenant_id, 'Queso Manchego', 210.00, 'kg', 5),
     (target_tenant_id, 'Ajonjolí', 110.00, 'kg', 2);
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer;
 
 
 -- 2. Create the Trigger Function
@@ -43,6 +46,9 @@ declare
   meta_invite_tenant_id text;
   meta_invite_role text;
 begin
+  -- Log entry for debugging in Supabase Dashboard > Database > Postgres Logs
+  raise log 'Trigger handle_new_user started for user_id: %', new.id;
+
   -- Extract values from raw_user_meta_data
   meta_business_name := new.raw_user_meta_data->>'business_name';
   meta_full_name := new.raw_user_meta_data->>'full_name';
@@ -51,11 +57,14 @@ begin
 
   -- Case A: Invitation (Joining existing tenant)
   if meta_invite_tenant_id is not null then
+      raise log 'Joining existing tenant: %', meta_invite_tenant_id;
       insert into public.profiles (id, tenant_id, role, full_name)
       values (new.id, meta_invite_tenant_id::uuid, coalesce(meta_invite_role, 'baker'), meta_full_name);
       
   -- Case B: New Owner (Creating new tenant)
   elsif meta_business_name is not null then
+      raise log 'Creating new tenant: %', meta_business_name;
+      
       -- 1. Create Tenant
       insert into public.tenants (name) values (meta_business_name) returning id into new_tenant_id;
       
@@ -65,6 +74,12 @@ begin
       
       -- 3. Seed Data
       perform public.seed_tenant_data(new_tenant_id);
+
+  else
+      -- Validation Fallback: If no business name and no invite, we have a problem.
+      raise log 'WARNING: User created without business_name or invite_id. No tenant formed.';
+      -- Optional: raise exception 'Business Name is required' using errcode 'P0001';
+      -- For now we allow it but log it, so user creation doesn't hard fail if it's a dashboard invite.
   end if;
 
   return new;
