@@ -21,8 +21,14 @@ export default function LoginScreen({ onLogin, onBack, onRegister }) {
             if (error) throw error;
 
             // Success Handler
-            console.log('Login successful. Waiting for session...');
-            alert('LOGIN OK! Session User: ' + data.user.id);
+            console.log('Login successful. Full Data:', data);
+
+            if (!data?.user) {
+                console.error('CRITICAL: Login returned no error but no user!', data);
+                throw new Error('Login incompleto: No se recibió sesión de usuario.');
+            }
+
+            alert('LOGIN OK! User ID: ' + data.user.id + '\nEmail: ' + data.user.email);
             setError(null);
             setLoading(true);
             // We force a "success" state visual (re-using error box for now or just loading text)
