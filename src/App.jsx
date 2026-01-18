@@ -199,6 +199,7 @@ function App() {
     setLastUpdated(Date.now());
   };
 
+
   // SAFETY: If Supabase config is missing
   if (!supabase) {
     return (
@@ -210,6 +211,7 @@ function App() {
       </div>
     );
   }
+
 
   // LOADING STATE
   if (initializing) {
