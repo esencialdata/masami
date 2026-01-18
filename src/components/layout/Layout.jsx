@@ -2,13 +2,13 @@ import React from 'react';
 import { LayoutDashboard, Users, Settings, Package, Croissant, LogOut, Calendar, BarChart3 } from 'lucide-react';
 import { TransactionFABS } from '../transactions/TransactionFABS';
 
-const Layout = ({ children, activeTab, setActiveTab, onTransactionAdded }) => {
+const Layout = ({ children, activeTab, setActiveTab, onTransactionAdded, onLogout }) => {
     return (
         <div className="min-h-screen bg-background flex">
             {/* Sidebar - Desktop/Tablet */}
             <aside className="hidden md:flex w-64 flex-col bg-white border-r border-gray-100 h-screen fixed left-0 top-0 z-50">
                 <div className="p-8 flex items-center gap-3">
-                    <img src="/logo_chelito.svg" alt="Chelito" className="h-16 w-auto" />
+                    <img src="/logo-miga.svg" alt="Miga" className="h-12 w-auto" />
                 </div>
 
                 <nav className="flex-1 px-4 space-y-2 py-4">
@@ -54,10 +54,15 @@ const Layout = ({ children, activeTab, setActiveTab, onTransactionAdded }) => {
                 </nav>
 
                 <div className="p-4 border-t border-gray-100">
-                    <button className="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-gray-50 text-gray-600 transition-colors">
-                        <img src="/app_icon.svg" alt="User" className="w-10 h-10 rounded-full border border-gray-100 p-1" />
+                    <button
+                        onClick={onLogout}
+                        className="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-red-50 text-gray-600 hover:text-red-600 transition-colors"
+                    >
+                        <div className="w-10 h-10 rounded-full border border-gray-100 bg-brand-cream flex items-center justify-center text-brand-coffee font-bold">
+                            M
+                        </div>
                         <div className="text-left">
-                            <p className="text-sm font-bold text-gray-900">Chelito De Montiel</p>
+                            <p className="text-sm font-bold text-gray-900">Mi Panadería</p>
                             <p className="text-xs text-gray-500">Cerrar Sesión</p>
                         </div>
                     </button>
@@ -66,7 +71,7 @@ const Layout = ({ children, activeTab, setActiveTab, onTransactionAdded }) => {
 
             {/* Mobile Header */}
             <header className="md:hidden fixed top-0 left-0 right-0 bg-white p-4 shadow-sm z-50 flex items-center justify-center border-b border-gray-100">
-                <img src="/logo_chelito.svg" alt="Chelito" className="h-16 w-auto" />
+                <img src="/logo-miga.svg" alt="Miga" className="h-12 w-auto" />
             </header>
 
             {/* Main Content */}

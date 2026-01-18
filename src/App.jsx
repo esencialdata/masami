@@ -242,11 +242,19 @@ function App() {
     }
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setSession(null);
+    setAuthView('landing');
+    setInitializing(false);
+  };
+
   return (
     <Layout
       activeTab={activeTab}
       setActiveTab={setActiveTab}
       onTransactionAdded={handleTransactionAdded}
+      onLogout={handleLogout}
     >
       {renderContent()}
     </Layout>

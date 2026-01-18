@@ -31,8 +31,11 @@ const SupplyList = () => {
     const getPriceTrend = (supply) => {
         if (!supply.history || supply.history.length < 2) return { icon: <Minus size={16} className="text-gray-400" />, label: 'Estable' };
 
-        const current = supply.history[supply.history.length - 1].price;
-        const previous = supply.history[supply.history.length - 2].price;
+        // Sort by date descending (Newest first) to ensure correct comparison
+        const sortedHistory = [...supply.history].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        const current = Number(sortedHistory[0].price);
+        const previous = Number(sortedHistory[1].price);
 
         if (current > previous) return { icon: <TrendingUp size={16} className="text-red-500" />, label: 'Subió', color: 'text-red-500' };
         if (current < previous) return { icon: <TrendingDown size={16} className="text-green-500" />, label: 'Bajó', color: 'text-green-500' };
@@ -283,6 +286,22 @@ const AddSupplyModal = ({ isOpen, onClose, onSuccess, initialData }) => {
                 >
                     {loading ? 'Guardando...' : (initialData ? 'Guardar Cambios' : 'Crear en Catálogo')}
                 </button>
+
+                {initialData && (
+                    <button
+                        type="button"
+                        onClick={async () => {
+                            if (confirm('¿Estás seguro de eliminar este insumo?')) {
+                                setLoading(true);
+                                await api.supplies.delete(initialData.id);
+                                onSuccess();
+                            }
+                        }}
+                        className="w-full text-red-500 py-3 font-bold hover:bg-red-50 rounded-xl transition-colors"
+                    >
+                        Eliminar Insumo
+                    </button>
+                )}
             </form>
         </Modal>
     );
