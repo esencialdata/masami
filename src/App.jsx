@@ -38,9 +38,7 @@ const LoginScreen = ({ onRegisterClick, onBackToLanding }) => {
             <span className="material-symbols-outlined text-sm">arrow_back</span> Volver
           </button>
         </div>
-        <div className="w-16 h-16 bg-brand-gold rounded-2xl mx-auto mb-6 flex items-center justify-center text-white font-bold text-2xl shadow-lg shadow-brand-gold/20">
-          Mi
-        </div>
+        <img src="/app_icon.svg" alt="Miga Logo" className="w-16 h-16 mx-auto mb-6 rounded-2xl shadow-lg shadow-brand-gold/20" />
         <h1 className="text-2xl font-bold text-brand-coffee mb-2">Bienvenido a Miga</h1>
         <p className="text-brand-coffee/60 mb-8 text-sm">Tu sistema operativo de panadería</p>
 
@@ -159,6 +157,7 @@ const RegisterScreen = ({ onLoginClick, onBackToLanding }) => {
             <span className="material-symbols-outlined text-sm">arrow_back</span> Volver
           </button>
         </div>
+        <img src="/app_icon.svg" alt="Miga Logo" className="w-16 h-16 mx-auto mb-6 rounded-2xl shadow-lg shadow-brand-gold/20" />
         <h1 className="text-2xl font-bold text-brand-coffee mb-2">Comienza Gratis</h1>
         <p className="text-brand-coffee/60 mb-6 text-sm">Prueba Miga por 7 días sin costo</p>
 
