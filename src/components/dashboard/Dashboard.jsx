@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../../services/api';
-import { TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, CheckCircle } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { format, isSameDay } from 'date-fns';
+import { format, isSameDay, subDays } from 'date-fns';
 import TransactionList from '../transactions/TransactionList';
 import ProductionPlanner from '../production/ProductionPlanner';
 import ClosingChecklistModal from './ClosingChecklistModal';
-import { CheckCircle } from 'lucide-react';
 
 const Dashboard = ({ refreshTrigger }) => {
     const [metrics, setMetrics] = useState({
@@ -14,7 +13,9 @@ const Dashboard = ({ refreshTrigger }) => {
         expenses: 0,
         goal: 0,
         percent: 0,
-        isProfit: false
+        isProfit: false,
+        trend: '',
+        trendPositive: false
     });
     const [loading, setLoading] = useState(true);
     const [stockAlerts, setStockAlerts] = useState([]);
@@ -23,6 +24,7 @@ const Dashboard = ({ refreshTrigger }) => {
     const calculatePulse = async () => {
         try {
             const now = new Date();
+            const yesterday = subDays(now, 1);
             const todayStr = format(now, 'yyyy-MM-dd');
 
             const [txs, config, packaging] = await Promise.all([
@@ -31,11 +33,10 @@ const Dashboard = ({ refreshTrigger }) => {
                 api.packaging.list()
             ]);
 
-            // Debug Logging for User/Dev
+            // Debug Logging
             console.log("Dashboard - Checking Dates:", { todayStr, totalTxs: txs.length });
 
-            // Stock Alerts
-            // Stock Alerts - Aggregated by Name to handle duplicates
+            // Stock Alerts Logic
             const aggregatedStock = packaging.reduce((acc, item) => {
                 const name = item.type.trim();
                 if (!acc[name]) {
@@ -47,7 +48,6 @@ const Dashboard = ({ refreshTrigger }) => {
                 }
                 acc[name].current_quantity += Number(item.current_quantity);
                 acc[name].ids.push(item.id);
-                // Keep the max alert threshold found for safety, or just the first one
                 acc[name].min_alert = Math.max(Number(acc[name].min_alert), Number(item.min_alert));
                 return acc;
             }, {});
@@ -55,14 +55,8 @@ const Dashboard = ({ refreshTrigger }) => {
             const alerts = Object.values(aggregatedStock).filter(p => Number(p.current_quantity) <= Number(p.min_alert));
             setStockAlerts(alerts);
 
-            // Filter using isSameDay for robustness
-            const todayTxs = txs.filter(t => {
-                const txDate = new Date(t.date);
-                const isToday = isSameDay(txDate, now);
-                // console.log(`Tx ${t.id} (${t.date}): isToday=${isToday}`); // Uncomment for verbose debug
-                return isToday;
-            });
-            console.log("Found today transactions:", todayTxs.length);
+            // Calculate Today's Metrics
+            const todayTxs = txs.filter(t => isSameDay(new Date(t.date), now));
 
             const income = todayTxs
                 .filter(t => t.type === 'VENTA')
@@ -72,18 +66,40 @@ const Dashboard = ({ refreshTrigger }) => {
                 .filter(t => t.type === 'GASTO')
                 .reduce((sum, t) => sum + Number(t.amount), 0);
 
-            const dailyFixedCost = Number(config.monthly_fixed_costs) / 30;
-            const target = dailyFixedCost + variableExpenses; // The "Break Even" point for today
+            // Parsing seguro para evitar NaN
+            const fixedCostRaw = config?.monthly_fixed_costs;
+            const dailyFixedCost = (Number(fixedCostRaw) || 0) / 30; // Si es null/undefined/NaN, usa 0
 
+            const target = dailyFixedCost + variableExpenses; // The "Break Even" point for today
             const percent = target > 0 ? (income / target) * 100 : (income > 0 ? 100 : 0);
+
+            // Calculate Yesterday's Metrics for Trend
+            const yesterdayTxs = txs.filter(t => isSameDay(new Date(t.date), yesterday));
+            const yesterdayIncome = yesterdayTxs
+                .filter(t => t.type === 'VENTA')
+                .reduce((sum, t) => sum + Number(t.amount), 0);
+
+            let trendPercent = 0;
+            if (yesterdayIncome > 0) {
+                trendPercent = ((income - yesterdayIncome) / yesterdayIncome) * 100;
+            } else if (income > 0) {
+                // If yesterday was 0 and today is > 0
+                trendPercent = 100;
+            }
+
+            const trendLabel = yesterdayIncome === 0 && income === 0
+                ? "0% vs ayer"
+                : `${trendPercent > 0 ? '+' : ''}${trendPercent.toFixed(0)}% vs ayer`;
 
             setMetrics({
                 income,
                 expenses: variableExpenses,
                 goal: target,
-                percent: Math.min(percent, 100), // Cap for bar width, but value can be higher
+                percent: Math.min(percent, 100),
                 rawValue: percent,
-                isProfit: percent >= 100
+                isProfit: percent >= 100,
+                trend: trendLabel,
+                trendPositive: trendPercent >= 0
             });
         } catch (e) {
             console.error(e);
@@ -94,7 +110,6 @@ const Dashboard = ({ refreshTrigger }) => {
 
     useEffect(() => {
         calculatePulse();
-        // Simulate real-time by polling or simple load
         const interval = setInterval(calculatePulse, 5000);
         return () => clearInterval(interval);
     }, [refreshTrigger]);
@@ -115,10 +130,9 @@ const Dashboard = ({ refreshTrigger }) => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Daily Pulse Card - Feature */}
+                {/* Daily Pulse Card */}
                 <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 flex flex-col justify-between h-full relative overflow-hidden min-h-[300px]">
 
-                    {/* Decorative Background */}
                     <div className="absolute top-0 right-0 bg-yellow-50 w-32 h-32 rounded-bl-full -mr-8 -mt-8 opacity-50 pointer-events-none" />
 
                     <div className="flex justify-between items-start mb-8 relative z-10">
@@ -143,7 +157,6 @@ const Dashboard = ({ refreshTrigger }) => {
                     </div>
 
                     <div className="space-y-4 relative z-10">
-                        {/* Progress Bar */}
                         <div className="h-8 w-full bg-gray-100 rounded-full overflow-hidden p-1 shadow-inner">
                             <div
                                 className={cn(
@@ -167,8 +180,8 @@ const Dashboard = ({ refreshTrigger }) => {
                     <StatCard
                         title="Ventas Totales"
                         value={`$${metrics.income.toFixed(2)}`}
-                        trend="+12% vs ayer"
-                        trendUp={true}
+                        trend={metrics.trend}
+                        trendUp={metrics.trendPositive}
                         icon={<DollarSign className="text-yellow-600" size={24} />}
                         bg="bg-yellow-50"
                     />
@@ -179,7 +192,7 @@ const Dashboard = ({ refreshTrigger }) => {
                         icon={<TrendingDown className="text-red-500" size={24} />}
                         bg="bg-red-50"
                     />
-                    {/* Placeholder for future stats - Keeping layout balanced */}
+
                     <div className="sm:col-span-2 bg-gradient-to-r from-gray-800 to-gray-900 rounded-3xl p-6 text-white flex items-center justify-between shadow-lg">
                         <div>
                             <p className="text-gray-300 text-sm font-medium mb-1">Resultado Neto (Hoy)</p>
@@ -219,7 +232,7 @@ const Dashboard = ({ refreshTrigger }) => {
                 </div>
             )}
 
-            {/* Production Planner - NEW */}
+            {/* Production Planner */}
             <ProductionPlanner />
 
             {/* Recent Transactions Section */}

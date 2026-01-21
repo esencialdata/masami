@@ -19,31 +19,45 @@ const RecipeEditor = ({ isOpen, onClose, product, onSave }) => {
 
     const loadData = async () => {
         setLoading(true);
+
+        // 1. Fetch Insumos (INDEPENDENT)
+        // Carga los insumos primero para que la UI funcione aunque falle la receta
         try {
-            const [suppliesData, recipeData] = await Promise.all([
-                api.supplies.list(),
-                api.recipes.getByProduct(product.id)
-            ]);
+            const suppliesData = await api.supplies.list();
 
-            // Group supplies for selection to avoid duplicates in dropdown
-            const uniqueSupplies = Object.values(suppliesData.reduce((acc, item) => {
-                if (!acc[item.name]) acc[item.name] = item;
-                return acc;
-            }, {}));
+            // DEDUPLICAR INSUMOS (Hotfix para evitar multiplicados)
+            const uniqueSupplies = [];
+            const seen = new Set();
+            for (const s of (suppliesData || [])) {
+                if (s.name && !seen.has(s.name)) {
+                    seen.add(s.name);
+                    uniqueSupplies.push(s);
+                }
+            }
 
+            console.log("Supplies loaded (raw/unique):", suppliesData?.length, uniqueSupplies.length);
             setAllSupplies(uniqueSupplies);
-
-            // Map existing recipe
-            setIngredients(recipeData.map(r => ({
-                supply_id: r.supply.id,
-                name: r.supply.name,
-                quantity: r.quantity, // This is unit quantity
-                unit: r.unit,
-                cost: r.cost_contribution,
-                unit_cost: r.supply.current_cost
-            })));
         } catch (e) {
-            console.error(e);
+            console.error("Supplies error:", e);
+            // alert("Error al cargar insumos."); // Optional
+        }
+
+        // 2. Fetch Receta
+        // Si falla por problemas de DB (FK missing), catch para no bloquear la UI
+        try {
+            const recipeData = await api.recipes.getByProduct(product.id);
+            if (recipeData) {
+                setIngredients(recipeData.map(r => ({
+                    supply_id: r.supply.id,
+                    name: r.supply.name,
+                    quantity: r.quantity, // This is unit quantity
+                    unit: r.unit,
+                    cost: r.cost_contribution,
+                    unit_cost: r.supply.current_cost
+                })));
+            }
+        } catch (e) {
+            console.error("Recipe load error (ignoring):", e);
         } finally {
             setLoading(false);
         }
@@ -146,15 +160,34 @@ const RecipeEditor = ({ isOpen, onClose, product, onSave }) => {
                     {ingredients.map((ing, idx) => (
                         <div key={idx} className="flex gap-2 items-start bg-gray-50 p-3 rounded-lg border border-gray-100 animate-fadeIn">
                             <div className="flex-1">
-                                <label className="text-xs font-bold text-gray-500 mb-1 block">Insumo</label>
+                                <label className="text-xs font-bold text-gray-500 mb-1">Insumo</label>
+                                {allSupplies.length === 0 && (
+                                    <div className="bg-red-50 p-2 mb-2 rounded border border-red-200">
+                                        <p className="text-red-600 text-[10px] mb-1">Error: No cargaron insumos</p>
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                console.log("Retry clicked");
+                                                loadData();
+                                            }}
+                                            className="bg-red-100 text-red-700 text-xs px-2 py-1 rounded w-full border border-red-300 hover:bg-red-200"
+                                        >
+                                            🔄 RECARGAR AHORA
+                                        </button>
+                                    </div>
+                                )}
                                 <select
                                     className="w-full p-2 bg-white border border-gray-200 rounded-lg text-sm"
                                     value={ing.supply_id}
                                     onChange={(e) => updateIngredient(idx, 'supply_id', e.target.value)}
                                 >
-                                    <option value="">Seleccionar...</option>
+                                    <option value="">-- Seleccionar Insumo --</option>
                                     {allSupplies.map(s => (
-                                        <option key={s.id} value={s.id}>{s.name} ({s.unit})</option>
+                                        <option key={s.id} value={s.id}>
+                                            {s.name} (${s.current_cost}/{s.unit})
+                                        </option>
                                     ))}
                                 </select>
                             </div>

@@ -4,6 +4,7 @@ import BalanceSummary from './BalanceSummary';
 import ExpenseBreakdown from './ExpenseBreakdown';
 import InflationTracker from './InflationTracker';
 import ProfitabilityRanking from './ProfitabilityRanking';
+import DailyHistoryReport from './DailyHistoryReport';
 import { startOfMonth, endOfMonth, isWithinInterval, parseISO } from 'date-fns';
 import { TrendingUp, PieChart, AlertTriangle } from 'lucide-react';
 
@@ -104,6 +105,11 @@ const ReportsView = () => {
                     <ProfitabilityRanking />
                 </section>
             </div>
+
+            {/* 5. Historial Diario (Nuevo) */}
+            <section>
+                <DailyHistoryReport transactions={filteredTransactions} />
+            </section>
         </div>
     );
 };

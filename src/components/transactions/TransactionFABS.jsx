@@ -69,7 +69,14 @@ const AddTransactionModal = ({ isOpen, onClose, type, onSuccess }) => {
                 api.customers.list().then(setClients).catch(console.error);
             } else {
                 // Load supplies for expenses
-                api.supplies.list().then(setSupplies).catch(console.error);
+                api.supplies.list().then(data => {
+                    // Deduplicate by name to fix "multiplied" items in dropdown
+                    const unique = Object.values((data || []).reduce((acc, curr) => {
+                        if (!acc[curr.name]) acc[curr.name] = curr;
+                        return acc;
+                    }, {}));
+                    setSupplies(unique);
+                }).catch(console.error);
             }
             setPurchaseQty(''); // Reset qty
         }

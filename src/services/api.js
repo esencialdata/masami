@@ -175,15 +175,20 @@ export const api = {
                 try {
                     const { data: { session } } = await supabase.auth.getSession();
                     if (!session) throw "No session";
+
+                    // NETWORK FIRST STRATEGY (Fixes RLS/Cache syncing issues)
                     const { data, error } = await supabase.from('supplies').select('*').order('name');
+
                     if (error) throw error;
-                    if (!data || data.length === 0) {
-                        const cached = getLocal(STORAGE_KEYS.SUPPLIES);
-                        if (cached.length > 0) return cached;
-                    }
-                    setLocal(STORAGE_KEYS.SUPPLIES, data);
-                    return data;
-                } catch (e) { }
+
+                    // Update cache with fresh data (even if empty)
+                    setLocal(STORAGE_KEYS.SUPPLIES, data || []);
+                    return data || [];
+                } catch (e) {
+                    console.warn("Offline or Error fetching supplies, using cache:", e);
+                    // Fallback only on error
+                    return getLocal(STORAGE_KEYS.SUPPLIES);
+                }
             }
             return getLocal(STORAGE_KEYS.SUPPLIES);
         },
