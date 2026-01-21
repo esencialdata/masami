@@ -49,7 +49,8 @@ const DailyHistoryReport = ({ transactions }) => {
                 </span>
             </div>
 
-            <div className="overflow-x-auto">
+            {/* Desktop View (Table) */}
+            <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-sm text-left">
                     <thead className="bg-gray-50 text-gray-500 font-medium border-b border-gray-100">
                         <tr>
@@ -89,6 +90,41 @@ const DailyHistoryReport = ({ transactions }) => {
                         })}
                     </tbody>
                 </table>
+            </div>
+
+            {/* Mobile View (Cards) */}
+            <div className="md:hidden space-y-4 p-4">
+                {sortedDays.map((day) => {
+                    const balance = day.income - day.expenses;
+                    const dateObj = parseISO(day.date);
+                    return (
+                        <div key={day.date} className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                            <div className="flex justify-between items-start mb-3">
+                                <div>
+                                    <h4 className="font-bold text-gray-900 capitalize text-sm">
+                                        {format(dateObj, 'EEEE d MMM', { locale: es })}
+                                    </h4>
+                                    <p className="text-xs text-gray-500">{day.txCount} movimientos</p>
+                                </div>
+                                <div className={`flex items-center gap-1 text-sm font-bold ${balance >= 0 ? 'text-green-700' : 'text-red-600'}`}>
+                                    {balance >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+                                    ${balance.toFixed(2)}
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2 text-xs">
+                                <div className="bg-white p-2 rounded-lg border border-gray-100 flex justify-between items-center">
+                                    <span className="text-gray-500">Entradas</span>
+                                    <span className="font-bold text-green-600">+${day.income.toFixed(2)}</span>
+                                </div>
+                                <div className="bg-white p-2 rounded-lg border border-gray-100 flex justify-between items-center">
+                                    <span className="text-gray-500">Salidas</span>
+                                    <span className="font-bold text-red-500">-${day.expenses.toFixed(2)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
             </div>
         </div>
     );
