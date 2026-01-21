@@ -76,7 +76,7 @@ const InstallPrompt = () => {
     if (!showPrompt) return null;
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 z-50 p-4 animate-slide-up pb-safe">
+        <div className="fixed bottom-0 left-0 right-0 z-[9999] p-4 animate-slide-up pb-safe">
             <div className="bg-white/95 backdrop-blur-md border border-gray-200 shadow-2xl rounded-2xl p-4 md:max-w-md md:mx-auto">
                 <div className="flex justify-between items-start mb-2">
                     <div className="flex items-center gap-3">
