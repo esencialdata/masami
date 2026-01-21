@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { MessageCircle, Phone, Star, UserPlus, Pencil } from 'lucide-react';
+import { MessageCircle, Phone, Star, UserPlus, Pencil, FileSpreadsheet } from 'lucide-react';
 import { api } from '../../services/api';
 import AddClientModal from './AddClientModal';
+import ImportClientsModal from './ImportClientsModal';
 
 const ClientList = () => {
     const [clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [selectedZone, setSelectedZone] = useState('Todas');
     const [editingClient, setEditingClient] = useState(null);
 
@@ -52,12 +54,22 @@ const ClientList = () => {
                         <p className="text-xs font-bold text-primary mt-1">🔥 Zona más activa: {topZone} ({zoneCounts[topZone]} clientes)</p>
                     )}
                 </div>
-                <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="hidden md:flex items-center bg-primary text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-yellow-600 transition-colors">
-                    <UserPlus size={20} className="mr-2" />
-                    Nuevo Cliente
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => setIsImportModalOpen(true)}
+                        className="hidden md:flex items-center bg-white text-gray-700 border border-gray-200 px-4 py-3 rounded-xl font-bold shadow-sm hover:bg-gray-50 transition-colors"
+                        title="Importar desde CSV"
+                    >
+                        <FileSpreadsheet size={20} className="mr-2" />
+                        Importar
+                    </button>
+                    <button
+                        onClick={() => setIsModalOpen(true)}
+                        className="hidden md:flex items-center bg-primary text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-yellow-600 transition-colors">
+                        <UserPlus size={20} className="mr-2" />
+                        Nuevo Cliente
+                    </button>
+                </div>
             </div>
 
             {/* Zone Filter - Dropdown */}
@@ -110,6 +122,12 @@ const ClientList = () => {
                 }}
                 onClientAdded={loadClients}
                 initialData={editingClient}
+            />
+
+            <ImportClientsModal
+                isOpen={isImportModalOpen}
+                onClose={() => setIsImportModalOpen(false)}
+                onImportComplete={loadClients}
             />
         </div>
     );
