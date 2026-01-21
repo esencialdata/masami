@@ -1,14 +1,10 @@
--- EMERGENCY FIX: Remove the trigger to unblock Registration
--- Run this in Supabase SQL Editor
+-- ==========================================
+-- SCRIPT DE LIMPIEZA DE TRIGGERS (Fix Login)
+-- ==========================================
 
--- 1. Drop the trigger so User Signup NEVER fails
-drop trigger if exists on_auth_user_created on auth.users;
+-- El trigger anterior intentaba crear un negocio automáticamente al registrarse.
+-- Como ahora tenemos un "Wizard" (Paso a paso), ese trigger falla porque le faltan datos.
+-- Este script lo desactiva para que el registro sea limpio.
 
--- 2. Drop the function to be clean
-drop function if exists public.handle_new_user();
-
--- After running this:
--- 1. Go to your App and Register a NEW User.
--- 2. It will succeed immediately.
--- 3. The App will show "Finalizando Configuración".
--- 4. Click the button to create your Panadería.
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+DROP FUNCTION IF EXISTS public.handle_new_user();

@@ -8,6 +8,8 @@ import ProductList from './components/products/ProductList';
 import Settings from './components/settings/Settings';
 import ReportsView from './components/reports/ReportsView';
 import LandingPage from './components/landing/LandingPage';
+import OnboardingWizard from './components/auth/OnboardingWizard';
+import SubscriptionGuard from './components/auth/SubscriptionGuard';
 
 // --- COMPONENTS DE AUTENTICACIÓN (SaaS) ---
 
@@ -93,6 +95,7 @@ const RegisterScreen = ({ onLoginClick, onBackToLanding }) => {
   const [formData, setFormData] = useState({ email: '', password: '', fullName: '', businessName: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [verificationSent, setVerificationSent] = useState(false);
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -100,16 +103,20 @@ const RegisterScreen = ({ onLoginClick, onBackToLanding }) => {
     setError(null);
 
     try {
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      const { data, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: { data: { full_name: formData.fullName } }
       });
       if (authError) throw authError;
 
-      // Wait a sec for triggers
-      await new Promise(r => setTimeout(r, 1000));
-      await supabase.auth.signInWithPassword({ email: formData.email, password: formData.password });
+      // Check if session was created immediately (Email Auth disabled)
+      if (data.session) {
+        // Auto-login will be handled by onAuthStateChange in App component
+      } else if (data.user) {
+        // User created but no session => Email Confirmation Required
+        setVerificationSent(true);
+      }
 
     } catch (err) {
       setError(err.message);
@@ -117,6 +124,30 @@ const RegisterScreen = ({ onLoginClick, onBackToLanding }) => {
       setLoading(false);
     }
   };
+
+  if (verificationSent) {
+    return (
+      <div className="min-h-screen bg-brand-cream flex flex-col items-center justify-center p-4 font-sans">
+        <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-sm text-center border border-brand-coffee/10">
+          <div className="w-16 h-16 bg-green-100 rounded-full mx-auto mb-6 flex items-center justify-center text-green-600">
+            <span className="material-symbols-outlined text-3xl">mark_email_read</span>
+          </div>
+          <h1 className="text-2xl font-bold text-brand-coffee mb-2">¡Revisa tu Correo!</h1>
+          <p className="text-brand-coffee/60 mb-8 text-sm">
+            Hemos enviado un enlace de confirmación a <strong>{formData.email}</strong>.
+            <br /><br />
+            Por favor, haz clic en el enlace para activar tu cuenta y comenzar a hornear.
+          </p>
+          <button
+            onClick={onLoginClick}
+            className="w-full bg-brand-coffee text-white font-bold py-4 rounded-xl hover:opacity-90 transition-all"
+          >
+            Volver al Inicio de Sesión
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-brand-cream flex flex-col items-center justify-center p-4 font-sans">
@@ -166,30 +197,82 @@ const RegisterScreen = ({ onLoginClick, onBackToLanding }) => {
 
 function App() {
   const [session, setSession] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
   const [authView, setAuthView] = useState('landing'); // landing, login, register
   const [activeTab, setActiveTab] = useState('dashboard');
   const [lastUpdated, setLastUpdated] = useState(() => Date.now());
   const [initializing, setInitializing] = useState(true);
 
+  // Helper to fetch profile + tenant
+  const fetchProfile = async (userId) => {
+    try {
+      // Race DB query against a 3s timeout to prevent hanging
+      const query = supabase
+        .from('profiles')
+        .select('*, tenant:tenants(*)')
+        .eq('id', userId)
+        .single();
+
+      const { data, error } = await Promise.race([
+        query,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Profile fetch timeout')), 3000))
+      ]);
+
+      if (!error && data) {
+        setUserProfile(data);
+        return data;
+      }
+    } catch (e) {
+      console.warn("Profile fetch skipped/failed:", e.message);
+    }
+    return null;
+  };
+
   useEffect(() => {
-    // Check initial session
+    let mounted = true;
+
     if (supabase) {
-      supabase.auth.getSession().then(({ data: { session } }) => {
+      // 1. Initial Session Check (Standard Supabase Logic)
+      supabase.auth.getSession().then(async ({ data: { session } }) => {
+        if (!mounted) return;
         setSession(session);
-        setInitializing(false);
+
         if (session) {
-          // If logged in, go straight to app logic
+          // Attempt profile load, but don't block forever
+          fetchProfile(session.user.id).finally(() => {
+            if (mounted) setInitializing(false);
+          });
+          setActiveTab('dashboard');
+        } else {
+          setInitializing(false);
+        }
+      });
+
+      // 2. Auth Listener
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (!mounted) return;
+
+        // Handle explicit sign-in/out
+        setSession(session);
+
+        if (event === 'SIGNED_OUT') {
+          setUserProfile(null);
+          setAuthView('landing');
+          setInitializing(false);
+        } else if (event === 'SIGNED_IN' && session) {
+          // On explicit sign-in, we might want to wait for profile
+          setInitializing(true);
+          fetchProfile(session.user.id).finally(() => {
+            if (mounted) setInitializing(false);
+          });
           setActiveTab('dashboard');
         }
       });
 
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-        setSession(session);
-        setInitializing(false);
-        if (session) setActiveTab('dashboard');
-      });
-
-      return () => subscription.unsubscribe();
+      return () => {
+        mounted = false;
+        subscription.unsubscribe();
+      };
     } else {
       setInitializing(false);
     }
@@ -197,6 +280,14 @@ function App() {
 
   const handleTransactionAdded = () => {
     setLastUpdated(Date.now());
+  };
+
+  const onWizardComplete = async () => {
+    if (session) {
+      setInitializing(true); // Mostrar loading mientras recargamos
+      await fetchProfile(session.user.id);
+      setInitializing(false);
+    }
   };
 
 
@@ -231,6 +322,12 @@ function App() {
     return <LoginScreen onRegisterClick={() => setAuthView('register')} onBackToLanding={() => setAuthView('landing')} />;
   }
 
+  // SAAS FLOW: ONBOARDING WIZARD
+  // Si hay sesión, pero NO tenemos tenant_id en el perfil, mostramos el Wizard
+  if (userProfile && !userProfile.tenant_id) {
+    return <OnboardingWizard onComplete={onWizardComplete} />;
+  }
+
   // LOGGED IN STATE -> DASHBOARD
   const renderContent = () => {
     switch (activeTab) {
@@ -246,20 +343,21 @@ function App() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    setSession(null);
-    setAuthView('landing');
-    setInitializing(false);
+    // State updates handled by onAuthStateChange
   };
 
   return (
-    <Layout
-      activeTab={activeTab}
-      setActiveTab={setActiveTab}
-      onTransactionAdded={handleTransactionAdded}
-      onLogout={handleLogout}
-    >
-      {renderContent()}
-    </Layout>
+    <SubscriptionGuard tenant={userProfile?.tenant}>
+      <Layout
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        onTransactionAdded={handleTransactionAdded}
+        onLogout={handleLogout}
+        userProfile={userProfile}
+      >
+        {renderContent()}
+      </Layout>
+    </SubscriptionGuard>
   );
 }
 

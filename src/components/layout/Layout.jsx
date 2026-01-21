@@ -2,7 +2,7 @@ import React from 'react';
 import { LayoutDashboard, Users, Settings, Package, Croissant, LogOut, Calendar, BarChart3 } from 'lucide-react';
 import { TransactionFABS } from '../transactions/TransactionFABS';
 
-const Layout = ({ children, activeTab, setActiveTab, onTransactionAdded, onLogout }) => {
+const Layout = ({ children, activeTab, setActiveTab, onTransactionAdded, onLogout, userProfile }) => {
     return (
         <div className="min-h-screen bg-background flex">
             {/* Sidebar - Desktop/Tablet */}
@@ -59,11 +59,11 @@ const Layout = ({ children, activeTab, setActiveTab, onTransactionAdded, onLogou
                         className="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-red-50 text-gray-600 hover:text-red-600 transition-colors"
                     >
                         <div className="w-10 h-10 rounded-full border border-gray-100 bg-brand-cream flex items-center justify-center text-brand-coffee font-bold">
-                            M
+                            {userProfile?.tenant?.name?.charAt(0).toUpperCase() || "M"}
                         </div>
-                        <div className="text-left">
-                            <p className="text-sm font-bold text-gray-900">Mi Panadería</p>
-                            <p className="text-xs text-gray-500">Cerrar Sesión</p>
+                        <div className="text-left overflow-hidden">
+                            <p className="text-sm font-bold text-gray-900 truncate">{userProfile?.tenant?.name || "Mi Panadería"}</p>
+                            <p className="text-xs text-gray-500 truncate">{userProfile?.full_name || "Cerrar Sesión"}</p>
                         </div>
                     </button>
                 </div>

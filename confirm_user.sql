@@ -1,10 +1,16 @@
--- MANUAL CONFIRMATION SCRIPT
--- Run this if Supabase is not sending emails (common in Free Tier due to limits)
+-- ==========================================
+-- SCRIPT DE CONFIRMACIÓN MANUAL (Bypass Email)
+-- ==========================================
 
--- Replace 'el_correo_del_usuario@ejemplo.com' with the actual email
+-- Supabase Free Tier limita los emails a 3 por hora.
+-- Usa este script para confirmar tu usuario manualmente sin esperar el correo.
+
+-- Confirmar TODOS los usuarios pendientes:
 UPDATE auth.users
 SET email_confirmed_at = now()
-WHERE email = 'el_correo_del_usuario@ejemplo.com';
+WHERE email_confirmed_at IS NULL;
 
--- Verify the change
-SELECT email, email_confirmed_at FROM auth.users WHERE email = 'el_correo_del_usuario@ejemplo.com';
+-- O confirma uno específico (descomenta y edita si prefieres):
+-- UPDATE auth.users
+-- SET email_confirmed_at = now()
+-- WHERE email = 'tu_correo@ejemplo.com';
