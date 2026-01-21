@@ -1,10 +1,10 @@
 {
-    "name": "Chelito De Montiel",
-    "short_name": "CDM",
+    "name": "Miga",
+    "short_name": "Miga",
     "start_url": "/",
     "display": "standalone",
-    "background_color": "#ffffff",
-    "theme_color": "#ffffff",
+    "background_color": "#F9F7F2",
+    "theme_color": "#ff5206",
     "icons": [
         {
             "src": "/app_icon.svg",

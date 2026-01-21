@@ -11,6 +11,8 @@ import LandingPage from './components/landing/LandingPage';
 import OnboardingWizard from './components/auth/OnboardingWizard';
 import SubscriptionGuard from './components/auth/SubscriptionGuard';
 
+import InstallPrompt from './components/pwa/InstallPrompt';
+
 // --- COMPONENTS DE AUTENTICACIÓN (SaaS) ---
 
 const LoginScreen = ({ onRegisterClick, onBackToLanding }) => {
@@ -348,6 +350,7 @@ function App() {
 
   return (
     <SubscriptionGuard tenant={userProfile?.tenant}>
+      <InstallPrompt />
       <Layout
         activeTab={activeTab}
         setActiveTab={setActiveTab}
