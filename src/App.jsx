@@ -12,6 +12,7 @@ import OnboardingWizard from './components/auth/OnboardingWizard';
 import SubscriptionGuard from './components/auth/SubscriptionGuard';
 
 import InstallPrompt from './components/pwa/InstallPrompt';
+import ProductionView from './components/production/ProductionView';
 
 // --- COMPONENTS DE AUTENTICACIÓN (SaaS) ---
 
@@ -337,6 +338,7 @@ function App() {
       case 'clients': return <ClientList />;
       case 'products': return <ProductList />;
       case 'settings': return <Settings />;
+      case 'production': return <ProductionView />;
       case 'reports': return <ReportsView />;
       default: return <Dashboard refreshTrigger={lastUpdated} />;
     }

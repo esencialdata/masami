@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Users, Settings, Package, Croissant, LogOut, Calendar, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, Users, Settings, Package, Croissant, LogOut, Calendar, BarChart3, ChefHat } from 'lucide-react';
 import { TransactionFABS } from '../transactions/TransactionFABS';
 
 const Layout = ({ children, activeTab, setActiveTab, onTransactionAdded, onLogout, userProfile }) => {
@@ -23,6 +23,12 @@ const Layout = ({ children, activeTab, setActiveTab, onTransactionAdded, onLogou
                         label="Agenda"
                         isActive={activeTab === 'orders'}
                         onClick={() => setActiveTab('orders')}
+                    />
+                    <SidebarLink
+                        icon={<ChefHat size={20} />}
+                        label="Producción"
+                        isActive={activeTab === 'production'}
+                        onClick={() => setActiveTab('production')}
                     />
                     <SidebarLink
                         icon={<Users size={20} />}
@@ -111,10 +117,10 @@ const Layout = ({ children, activeTab, setActiveTab, onTransactionAdded, onLogou
                         onClick={() => setActiveTab('products')}
                     />
                     <NavButton
-                        icon={<BarChart3 size={24} />}
-                        label="Reportes"
-                        isActive={activeTab === 'reports'}
-                        onClick={() => setActiveTab('reports')}
+                        icon={<ChefHat size={24} />}
+                        label="Producción"
+                        isActive={activeTab === 'production'}
+                        onClick={() => setActiveTab('production')}
                     />
                 </div>
             </nav>
