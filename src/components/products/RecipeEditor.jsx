@@ -111,6 +111,13 @@ const RecipeEditor = ({ isOpen, onClose, product, onSave }) => {
             }));
 
             await api.recipes.save(product.id, finalIngredients);
+
+            // Update product with new calculated cost
+            const finalUnitCost = (totalCost / batchSize).toFixed(2);
+            await api.products.update(product.id, {
+                calculated_cost: finalUnitCost
+            });
+
             onSave();
             onClose();
         } catch (error) {
