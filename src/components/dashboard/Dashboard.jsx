@@ -7,7 +7,7 @@ import TransactionList from '../transactions/TransactionList';
 import ProductionPlanner from '../production/ProductionPlanner';
 import ClosingChecklistModal from './ClosingChecklistModal';
 
-const Dashboard = ({ refreshTrigger }) => {
+const Dashboard = ({ refreshTrigger, userProfile }) => {
     const [metrics, setMetrics] = useState({
         income: 0,
         expenses: 0,
@@ -20,6 +20,16 @@ const Dashboard = ({ refreshTrigger }) => {
     const [loading, setLoading] = useState(true);
     const [stockAlerts, setStockAlerts] = useState([]);
     const [isClosingModalOpen, setIsClosingModalOpen] = useState(false);
+
+    // Dynamic Greeting Logic
+    const getGreeting = () => {
+        const hour = new Date().getHours();
+        const firstName = userProfile?.full_name?.split(' ')[0] || '';
+
+        const greeting = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches';
+
+        return firstName ? `¡${greeting}, ${firstName}!` : `¡${greeting}!`;
+    };
 
     const calculatePulse = async () => {
         try {
@@ -121,8 +131,8 @@ const Dashboard = ({ refreshTrigger }) => {
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-3xl font-bold text-gray-900">Resumen Financiero</h2>
-                    <p className="text-gray-500">Panorama general de tu panadería</p>
+                    <h2 className="text-3xl font-bold text-gray-900 tracking-tight">{getGreeting()}</h2>
+                    <p className="text-gray-500">Aquí está el panorama de hoy</p>
                 </div>
                 <div className="bg-white px-4 py-2 rounded-full border border-gray-100 text-sm font-medium text-gray-600 shadow-sm">
                     {format(new Date(), 'dd MMMM yyyy')}

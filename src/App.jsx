@@ -332,7 +332,7 @@ function App() {
   // LOGGED IN STATE -> DASHBOARD
   const renderContent = () => {
     switch (activeTab) {
-      case 'dashboard': return <Dashboard refreshTrigger={lastUpdated} />;
+      case 'dashboard': return <Dashboard refreshTrigger={lastUpdated} userProfile={userProfile} />;
       case 'orders': return <OrdersView />;
       case 'clients': return <ClientList />;
       case 'products': return <ProductList />;
